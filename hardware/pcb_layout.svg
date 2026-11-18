@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1010" viewBox="0 0 1240 1010" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
+  </defs>
+  <style>
+    .pcb{fill:#0e5230;stroke:#062615;stroke-width:2}
+    .keep{fill:#0a3d1f;stroke:#7fd0ff;stroke-width:1.2;stroke-dasharray:5 4}
+    .pad{fill:#e8c65a;stroke:#8a6508;stroke-width:0.8}
+    .comp{fill:#1a2330;stroke:#cfd8e6;stroke-width:1}
+    .tr{stroke:#d4af37;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .tr2{stroke:#e06666;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .trp{stroke:#f2e2a8;stroke-width:4.5;fill:none;stroke-linecap:round;opacity:0.85}
+    .via{fill:#e8c65a;stroke:#8a6508;stroke-width:0.6}
+    .sil{font-size:8.5px;fill:#ffffff;text-anchor:middle;font-weight:bold}
+    .sil2{font-size:7.5px;fill:#cfeeff;text-anchor:middle}
+    .pt{font-size:15px;font-weight:bold;fill:#12283f;text-anchor:middle}
+    .rule{font-size:11.5px;fill:#22303f;text-anchor:start}
+    .ruleh{font-size:12.5px;fill:#12283f;text-anchor:start;font-weight:bold}
+  </style>
+  <rect width="1240" height="1010" fill="#ffffff"/>
+  <text x="620" y="34" class="title">Печатная плата: размещение элементов и трассировка</text>
+  <text x="620" y="56" class="sub">Плата-носитель 64×48 мм, 4 слоя · плата датчика 26×26 мм, 2 слоя · учёт зон запрета (keepout) под антеннами 60 ГГц</text>
+  <text x="264.8" y="110" class="pt">A. Плата-носитель — размещение (вид сверху)</text>
+  <rect class="pcb" x="60" y="132" width="410" height="307" rx="6"/>
+  <circle cx="86" cy="158" r="6" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="1"/>
+  <circle cx="444" cy="158" r="6" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="1"/>
+  <circle cx="86" cy="414" r="6" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="1"/>
+  <circle cx="444" cy="414" r="6" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="1"/>
+  <text x="85.6" y="147.6" class="sil2">M2.5</text>
+  <rect class="keep" x="185" y="206" width="160" height="160" rx="3"/>
+  <text x="264.8" y="218.4" class="sil2">keepout: без меди под антенной</text>
+  <rect class="comp" x="185" y="206" width="160" height="160" rx="2"/>
+  <text x="264.8" y="288.6" class="sil">U1 · XM125 (вниз)</text>
+  <rect class="comp" x="89" y="346" width="64" height="64" rx="2"/>
+  <text x="120.80000000000001" y="381.4" class="sil">U8 STM32G474</text>
+  <rect class="comp" x="89" y="414" width="38" height="16" rx="2"/>
+  <text x="108.0" y="424.6" class="sil">Y1 8 МГц</text>
+  <rect class="comp" x="354" y="343" width="83" height="58" rx="2"/>
+  <text x="396.0" y="375.0" class="sil">PS1 D24V5F3</text>
+  <rect class="comp" x="354" y="321" width="26" height="16" rx="2"/>
+  <text x="367.20000000000005" y="331.8" class="sil">F1</text>
+  <rect class="comp" x="396" y="321" width="26" height="16" rx="2"/>
+  <text x="408.8" y="331.8" class="sil">D2 TVS</text>
+  <rect class="comp" x="393" y="183" width="45" height="38" rx="2"/>
+  <text x="415.20000000000005" y="205.4" class="sil">U9 TJA1051</text>
+  <rect class="comp" x="447" y="241" width="19" height="38" rx="2"/>
+  <text x="456.8" y="263.0" class="sil">J1</text>
+  <rect class="comp" x="447" y="305" width="19" height="32" rx="2"/>
+  <text x="456.8" y="323.8" class="sil">J2</text>
+  <rect class="comp" x="169" y="137" width="38" height="17" rx="2"/>
+  <text x="188.0" y="148.44" class="sil">J3 FFC</text>
+  <rect class="comp" x="428" y="140" width="32" height="17" rx="2"/>
+  <text x="444.0" y="151.0" class="sil">J4 FFC</text>
+  <rect class="comp" x="169" y="417" width="38" height="17" rx="2"/>
+  <text x="188.0" y="428.76" class="sil">J5 FFC</text>
+  <rect class="comp" x="65" y="260" width="17" height="38" rx="2"/>
+  <text x="73.44" y="282.20000000000005" class="sil">J6 FFC</text>
+  <rect class="comp" x="252" y="174" width="38" height="17" rx="2"/>
+  <text x="271.20000000000005" y="184.92000000000002" class="sil">J7 FFC</text>
+  <rect class="comp" x="124" y="391" width="22" height="22" rx="2"/>
+  <text x="135.2" y="405.40000000000003" class="sil">Q1</text>
+  <rect class="comp" x="166" y="388" width="32" height="32" rx="2"/>
+  <text x="181.60000000000002" y="407.0" class="sil">LS1</text>
+  <rect class="comp" x="214" y="394" width="19" height="19" rx="2"/>
+  <text x="223.20000000000002" y="407.0" class="sil">HL1</text>
+  <rect class="comp" x="342" y="145" width="32" height="32" rx="2"/>
+  <text x="357.6" y="163.8" class="sil">TP</text>
+  <text x="264.8" y="459.20000000000005" class="sil2" font-size="9" fill="#556">J1/J2 — JST-GH (питание+CAN, «LOW ALT») · J3…J6 — FFC кольцевых радаров · J7 — FFC радара «вверх»</text>
+  <text x="864.8" y="110" class="pt">B. Плата-носитель — трассировка (верхний слой)</text>
+  <rect class="pcb" x="660" y="132" width="410" height="307" rx="6"/>
+  <rect class="comp" x="785" y="206" width="160" height="160" rx="2"/>
+  <rect class="keep" x="791" y="212" width="147" height="147" rx="2"/>
+  <text x="864.8" y="285.6" class="sil">U1 XM125</text>
+  <text x="864.8" y="301.6" class="sil2">keepout под антенной</text>
+  <rect class="pad" x="798" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="811" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="823" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="836" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="849" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="862" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="875" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="887" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="900" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="913" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="926" y="363" width="6" height="6" rx="1"/>
+  <rect class="pad" x="751" y="341" width="5" height="5" rx="1"/>
+  <rect class="pad" x="751" y="348" width="5" height="5" rx="1"/>
+  <rect class="pad" x="751" y="354" width="5" height="5" rx="1"/>
+  <path class="tr" d="M752.8,343.2 L775.2,343.2 L775.2,375.2 L800.8,375.2 L800.8,365.6"/>
+  <path class="tr" d="M752.8,349.6 L775.2,349.6 L775.2,381.6 L813.6,381.6 L813.6,365.6"/>
+  <path class="tr" d="M752.8,356.0 L775.2,356.0 L775.2,388.0 L826.4,388.0 L826.4,365.6"/>
+  <path class="trp" d="M954.4,362.4 L852.0,388.0 L852.0,365.6"/>
+  <path class="trp" d="M852.0,388.0 L752.8,388.0"/>
+  <path class="tr2" d="M1015.2,196.0 L1047.2,221.6"/>
+  <path class="tr2" d="M1015.2,208.8 L1047.2,253.6"/>
+  <path class="tr" d="M752.8,400.8 L735.2,400.8"/>
+  <path class="tr" d="M746.4,400.8 L765.6,400.8"/>
+  <circle class="via" cx="775" cy="375" r="2.4"/>
+  <circle class="via" cx="775" cy="382" r="2.4"/>
+  <circle class="via" cx="852" cy="388" r="2.4"/>
+  <circle class="via" cx="753" cy="388" r="2.4"/>
+  <text x="864.8" y="459.20000000000005" class="sil2" font-size="9" fill="#556">жёлтый — сигнальные линии · бежевый (широкий) — питание +3,3 В · красный — диффпара CAN · площадки — краевые выводы модуля</text>
+  <text x="143.2" y="578" class="pt">C. Плата датчика 26×26 мм (2 слоя)</text>
+  <rect class="pcb" x="60" y="600" width="166" height="166" rx="5"/>
+  <rect class="keep" x="79" y="619" width="128" height="128" rx="3"/>
+  <text x="143.2" y="641.6" class="sil2">keepout 20×20 (без меди)</text>
+  <rect class="comp" x="86" y="626" width="115" height="115" rx="2"/>
+  <text x="143.2" y="683.2" class="sil">XM125 (A121)</text>
+  <text x="143.2" y="699.2" class="sil2">антенна 60 ГГц</text>
+  <rect class="comp" x="118" y="744" width="51" height="19" rx="2"/>
+  <text x="143.2" y="757.44" class="sil">J8 FFC 8-pin</text>
+  <path class="tr" d="M124.0,715.2 L124.0,744.0"/>
+  <path class="tr" d="M136.8,715.2 L136.8,744.0"/>
+  <path class="tr" d="M149.6,715.2 L149.6,744.0"/>
+  <circle cx="73" cy="613" r="4" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="0.8"/>
+  <circle cx="214" cy="613" r="4" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="0.8"/>
+  <circle cx="73" cy="754" r="4" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="0.8"/>
+  <circle cx="214" cy="754" r="4" fill="#0a3d1f" stroke="#cfe0ff" stroke-width="0.8"/>
+  <rect x="286" y="570" width="900" height="322" rx="10" fill="#f7f9fc" stroke="#d0d7e2"/>
+  <text x="300" y="594" class="ruleh">Правила проектирования и трассировки</text>
+  <text x="300" y="622" class="rule">• Стек: 4 слоя — L1 сигналы, L2 сплошная земля (GND), L3 питание (+3,3 В / +5 В), L4 сигналы/земля. FR-4, 1,6 мм, εr ≈ 4,3.</text>
+  <text x="300" y="648" class="rule">• Ширина проводников: сигнал 0,2 мм · питание 0,5…1,0 мм (по току) · CAN — 0,25 мм с зазором 0,25 мм.</text>
+  <text x="300" y="674" class="rule">• CAN (ISO 11898): диффпара 120 Ом, длина шлейфа &lt; 10 мм, терминатор 120 Ом у разъёма J1.</text>
+  <text x="300" y="700" class="rule">• SPI (до 20…50 МГц): длина линий ≤ 50 мм, согласование длин SCK/MOSI/MISO ±5 мм, без разрывов опорного слоя.</text>
+  <text x="300" y="726" class="rule">• Зоны запрета: под антеннами 60 ГГц (U1 и все XM125) — без меди и без металла; зазор ≥ 5 мм по краю.</text>
+  <text x="300" y="752" class="rule">• Переходные отверстия: Ø 0,3/0,6 мм; для питания и земли — по 2…3 шт. рядом с выводами (снижение индуктивности).</text>
+  <text x="300" y="778" class="rule">• Питание: TVS SMBJ5.0A и предохранитель F1 — у входа J1; керамика 100 нФ + 10 мкФ у каждого модуля XM125 и MCU.</text>
+  <text x="300" y="804" class="rule">• ЭМС: экран (заливка GND) между цифровыми и радиочастотными цепями; линию зуммера — в стороне от антенн.</text>
+  <text x="300" y="830" class="rule">• Механика: 4 отверстия M2.5, крепёж с фиксацией резьбы; заливка компаундом для стойкости к 10g / 3g.</text>
+  <text x="300" y="856" class="rule">• Габарит: плата-носитель 64×48 мм (4 слоя) + 6× плата датчика 26×26 мм (2 слоя) на кронштейнах.</text>
+  <text x="300" y="886" class="rule">Итог: трассировка обеспечивает SPI-опрос 6 датчиков и CAN-связь с СУ БПЛА; зоны под антеннами свободны от меди.</text>
+</svg>
