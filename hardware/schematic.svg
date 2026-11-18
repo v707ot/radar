@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
+    </marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
+      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .pin{font-size:12px;fill:#1a2330}
+      .pinr{font-size:12px;fill:#1a2330;text-anchor:end}
+      .wire{stroke:#334;stroke-width:2;fill:none}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334}
+    </style>
+  </defs>
+  <text x="640" y="32" class="title">Схема электрическая принципиальная (макет, модульная сборка)</text>
+  <text x="640" y="54" class="ts">Питание 5 В от BEC · MCU STM32G474 · датчики UART · оповещение и CAN-выход</text>
+
+  <!-- Power input -->
+  <rect class="box2" x="40" y="90" width="150" height="70"/>
+  <text x="115" y="120" class="t">BEC +5 В</text>
+  <text x="115" y="140" class="ts">бортовая сеть</text>
+
+  <rect class="box2" x="240" y="90" width="170" height="70"/>
+  <text x="325" y="115" class="t">D24V5F3</text>
+  <text x="325" y="135" class="ts">+3,3 В, 500 мА</text>
+
+  <path class="wire" d="M190,125 L240,125" marker-end="url(#a)"/>
+
+  <!-- TVS -->
+  <rect class="box2" x="40" y="200" width="150" height="60"/>
+  <text x="115" y="225" class="t">TVS + предохр.</text>
+  <text x="115" y="245" class="ts">защита по питанию</text>
+  <path class="wire" d="M115,160 L115,200" marker-end="url(#a)"/>
+
+  <!-- MCU -->
+  <rect class="box" x="470" y="150" width="340" height="360"/>
+  <text x="640" y="185" class="t">STM32G474 (Nucleo или своя PCB)</text>
+  <text x="640" y="205" class="ts">USART1 — радар · USART2 — лидар · USART3/CAN — СУ БПЛА</text>
+
+  <text x="486" y="245" class="pin">PA10  USART1_RX</text>
+  <text x="486" y="270" class="pin">PA9   USART1_TX</text>
+  <text x="486" y="295" class="pin">PA3   USART2_RX</text>
+  <text x="486" y="320" class="pin">PA2   USART2_TX</text>
+  <text x="486" y="345" class="pin">PA11  CAN_RX</text>
+  <text x="486" y="370" class="pin">PA12  CAN_TX</text>
+  <text x="486" y="395" class="pin">PB0   GPIO  → зуммер</text>
+  <text x="486" y="420" class="pin">PB1   GPIO  → LED</text>
+  <text x="486" y="445" class="pin">PB2   GPIO  → «LOW ALT»</text>
+  <text x="486" y="470" class="pin">3V3 / GND</text>
+
+  <!-- Radar -->
+  <rect class="box3" x="40" y="300" width="200" height="80"/>
+  <text x="140" y="330" class="t">Радар XM125</text>
+  <text x="140" y="350" class="ts">TX→PA10, RX←PA9</text>
+  <text x="140" y="368" class="ts">3V3, GND</text>
+  <path class="wire" d="M240,325 L470,250" marker-end="url(#a)"/>
+  <path class="wire" d="M470,275 C380,275 340,350 240,350" marker-end="url(#a)"/>
+
+  <!-- Lidar -->
+  <rect class="box3" x="40" y="410" width="200" height="80"/>
+  <text x="140" y="440" class="t">Лидар TFmini-S</text>
+  <text x="140" y="460" class="ts">TX→PA3, RX←PA2</text>
+  <text x="140" y="478" class="ts">5 В (вход), GND</text>
+  <path class="wire" d="M240,435 L470,300" marker-end="url(#a)"/>
+  <path class="wire" d="M470,325 C380,325 340,460 240,460" marker-end="url(#a)"/>
+
+  <!-- CAN transceiver -->
+  <rect class="box" x="900" y="230" width="180" height="110"/>
+  <text x="990" y="262" class="t">TJA1051</text>
+  <text x="990" y="284" class="ts">CAN-трансивер</text>
+  <text x="990" y="304" class="ts">120 Ом терминатор</text>
+  <text x="990" y="322" class="ts">CANH / CANL</text>
+  <path class="wire" d="M810,345 L900,290" marker-end="url(#a)"/>
+  <path class="wire" d="M810,370 L900,310" marker-end="url(#a)"/>
+
+  <rect class="box" x="1120" y="240" width="130" height="90"/>
+  <text x="1185" y="272" class="t">СУ БПЛА</text>
+  <text x="1185" y="294" class="ts">CAN-шина</text>
+  <text x="1185" y="314" class="ts">задание H_ср</text>
+  <path class="wire" d="M1080,285 L1120,285" marker-end="url(#a)"/>
+
+  <!-- Buzzer -->
+  <rect class="box4" x="900" y="390" width="180" height="60"/>
+  <text x="990" y="415" class="t">Зуммер (через Q1)</text>
+  <text x="990" y="435" class="ts">N-MOSFET + диод</text>
+  <path class="wire" d="M810,395 L900,415" marker-end="url(#a)"/>
+
+  <!-- LED -->
+  <rect class="box4" x="900" y="470" width="180" height="60"/>
+  <text x="990" y="495" class="t">LED (через R)</text>
+  <text x="990" y="515" class="ts">R = 1 кОм</text>
+  <path class="wire" d="M810,420 L900,495" marker-end="url(#a)"/>
+
+  <!-- Discrete output -->
+  <rect class="box4" x="900" y="550" width="180" height="70"/>
+  <text x="990" y="578" class="t">«LOW ALT»</text>
+  <text x="990" y="598" class="ts">оптопара / откр. сток</text>
+  <path class="wire" d="M810,445 L900,580" marker-end="url(#a)"/>
+
+  <!-- 3v3 rail -->
+  <path class="wire" d="M410,125 L410,470 L470,470"/>
+  <text x="430" y="150" class="lbl">+3,3 В</text>
+
+  <text x="640" y="700" class="lbl">Примечания: 1) Для макета датчики и MCU — готовые модули, соединённые проводами; своя PCB — на этапе опытного образца.</text>
+  <text x="640" y="722" class="lbl">2) TFmini-S питается от +5 В (вход 5 В-tolerant), XM125 — от +3,3 В. Уровни UART согласованы (3,3 В).</text>
+  <text x="640" y="744" class="lbl">3) «LOW ALT» — только сигнальный выход (флаг/индикация). Никаких инициирующих цепей.</text>
+  <text x="640" y="766" class="lbl">4) Резерв: I²C (PB6/PB7), SPI — для варианта XM125 по SPI.</text>
+</svg>

@@ -1,0 +1,318 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Автономная система предупреждения о малой высоте БПЛА</title>
+<style>
+body{font-family:DejaVu Sans,Arial,sans-serif;margin:0;background:#f6f8fb;color:#1a2330}
+.wrap{max-width:1320px;margin:0 auto;padding:24px}
+h1{font-size:24px;color:#12283f} h2{font-size:18px;color:#12283f;margin-top:32px}
+.card{background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:16px;margin:16px 0;overflow:auto}
+.note{background:#fff8ec;border:1px solid #e6c78a;border-radius:8px;padding:12px;font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid #cfd8e6;padding:6px 8px;text-align:left} th{background:#eef4fb}
+</style></head><body><div class="wrap">
+<h1>Автономная система предупреждения о малой высоте БПЛА</h1>
+<div class="note"><b>Назначение — только сигнализация.</b> Выходы: зуммер, LED, дискретный флаг «LOW ALT», CAN-телеметрия. Исполнительных/инициирующих цепей нет.</div>
+<h2>1. Структурная схема</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
+    </marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
+      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:22px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
+  </defs>
+  <text x="600" y="34" class="title">Автономная система предупреждения о малой высоте БПЛА — структурная схема</text>
+  <text x="600" y="56" class="ts">Вариант B (основной): радар 60 ГГц + лидар для сравнения · порог 2…10 м от СУ БПЛА · сигнальный выход</text>
+
+  <!-- Sensors -->
+  <rect class="box3" x="40" y="110" width="210" height="90"/>
+  <text x="145" y="145" class="t">Радар Acconeer XM125</text>
+  <text x="145" y="168" class="ts">60 ГГц, FMCW, UART</text>
+  <text x="145" y="185" class="ts">всепогодный, до ~20 м</text>
+
+  <rect class="box3" x="40" y="250" width="210" height="90"/>
+  <text x="145" y="285" class="t">Лидар Benewake TFmini-S</text>
+  <text x="145" y="308" class="ts">905 нм, UART/I²C</text>
+  <text x="145" y="325" class="ts">±6 см, 0,1…12 м</text>
+
+  <rect class="box3" x="40" y="390" width="210" height="80"/>
+  <text x="145" y="422" class="t">Инерциальный модуль</text>
+  <text x="145" y="443" class="ts">(опция) IMU/барометр</text>
+
+  <!-- MCU -->
+  <rect class="box" x="360" y="180" width="240" height="230"/>
+  <text x="480" y="220" class="t">Микроконтроллер</text>
+  <text x="480" y="242" class="t">STM32G474</text>
+  <text x="480" y="268" class="ts">приём данных датчиков</text>
+  <text x="480" y="288" class="ts">фильтр (медиана/Калман)</text>
+  <text x="480" y="308" class="ts">сравнение с порогом H_ср</text>
+  <text x="480" y="328" class="ts">формирование флага</text>
+  <text x="480" y="348" class="ts">телеметрия в СУ БПЛА</text>
+  <text x="480" y="372" class="ts">таймаут-контроль (Fail-Safe)</text>
+
+  <!-- Power -->
+  <rect class="box2" x="360" y="450" width="240" height="80"/>
+  <text x="480" y="482" class="t">Питание</text>
+  <text x="480" y="503" class="ts">BEC +5 В → LDO/DCDC +3,3 В</text>
+
+  <!-- Output -->
+  <rect class="box4" x="720" y="110" width="210" height="90"/>
+  <text x="825" y="145" class="t">Оповещение</text>
+  <text x="825" y="168" class="ts">зуммер + LED</text>
+  <text x="825" y="185" class="ts">(на борту)</text>
+
+  <rect class="box4" x="720" y="250" width="210" height="90"/>
+  <text x="825" y="285" class="t">Дискретный выход</text>
+  <text x="825" y="308" class="ts">«LOW ALT» (транзистор/</text>
+  <text x="825" y="325" class="ts">оптопара, открытый сток)</text>
+
+  <rect class="box" x="720" y="390" width="210" height="90"/>
+  <text x="825" y="425" class="t">CAN-трансивер</text>
+  <text x="825" y="448" class="ts">TJA1051</text>
+  <text x="825" y="465" class="ts">телеметрия и задание порога</text>
+
+  <!-- UAV -->
+  <rect class="box" x="1000" y="250" width="170" height="90"/>
+  <text x="1085" y="285" class="t">СУ БПЛА</text>
+  <text x="1085" y="308" class="ts">полётный контроллер</text>
+  <text x="1085" y="325" class="ts">пилот / автопилот</text>
+
+  <!-- wires sensors -> mcu -->
+  <path class="wire" d="M250,155 C310,155 310,240 360,240"/>
+  <path class="wire" d="M250,295 C310,295 310,300 360,300"/>
+  <path class="wire" d="M250,430 C310,430 310,360 360,360"/>
+
+  <!-- power -> mcu -->
+  <path class="wire" d="M480,450 L480,410"/>
+
+  <!-- mcu -> outputs -->
+  <path class="wire" d="M600,220 C660,220 660,155 720,155"/>
+  <path class="wire" d="M600,270 C660,270 660,295 720,295"/>
+  <path class="wire" d="M600,330 C660,330 660,435 720,435"/>
+
+  <!-- outputs -> UAV -->
+  <path class="wire" d="M930,295 C970,295 970,290 1000,290"/>
+  <path class="wire" d="M930,435 C970,435 970,320 1000,320"/>
+
+  <!-- power from UAV -->
+  <path class="wire" d="M1085,340 C1085,560 480,560 480,530" stroke-dasharray="6 4"/>
+
+  <text x="480" y="600" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи.</text>
+  <text x="480" y="624" class="lbl">Порог срабатывания H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
+  <text x="480" y="648" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные, исполнительных (инициирующих) цепей нет.</text>
+</svg>
+</div>
+<h2>2. Схема электрическая принципиальная (макет)</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
+    </marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
+      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .pin{font-size:12px;fill:#1a2330}
+      .pinr{font-size:12px;fill:#1a2330;text-anchor:end}
+      .wire{stroke:#334;stroke-width:2;fill:none}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334}
+    </style>
+  </defs>
+  <text x="640" y="32" class="title">Схема электрическая принципиальная (макет, модульная сборка)</text>
+  <text x="640" y="54" class="ts">Питание 5 В от BEC · MCU STM32G474 · датчики UART · оповещение и CAN-выход</text>
+
+  <!-- Power input -->
+  <rect class="box2" x="40" y="90" width="150" height="70"/>
+  <text x="115" y="120" class="t">BEC +5 В</text>
+  <text x="115" y="140" class="ts">бортовая сеть</text>
+
+  <rect class="box2" x="240" y="90" width="170" height="70"/>
+  <text x="325" y="115" class="t">D24V5F3</text>
+  <text x="325" y="135" class="ts">+3,3 В, 500 мА</text>
+
+  <path class="wire" d="M190,125 L240,125" marker-end="url(#a)"/>
+
+  <!-- TVS -->
+  <rect class="box2" x="40" y="200" width="150" height="60"/>
+  <text x="115" y="225" class="t">TVS + предохр.</text>
+  <text x="115" y="245" class="ts">защита по питанию</text>
+  <path class="wire" d="M115,160 L115,200" marker-end="url(#a)"/>
+
+  <!-- MCU -->
+  <rect class="box" x="470" y="150" width="340" height="360"/>
+  <text x="640" y="185" class="t">STM32G474 (Nucleo или своя PCB)</text>
+  <text x="640" y="205" class="ts">USART1 — радар · USART2 — лидар · USART3/CAN — СУ БПЛА</text>
+
+  <text x="486" y="245" class="pin">PA10  USART1_RX</text>
+  <text x="486" y="270" class="pin">PA9   USART1_TX</text>
+  <text x="486" y="295" class="pin">PA3   USART2_RX</text>
+  <text x="486" y="320" class="pin">PA2   USART2_TX</text>
+  <text x="486" y="345" class="pin">PA11  CAN_RX</text>
+  <text x="486" y="370" class="pin">PA12  CAN_TX</text>
+  <text x="486" y="395" class="pin">PB0   GPIO  → зуммер</text>
+  <text x="486" y="420" class="pin">PB1   GPIO  → LED</text>
+  <text x="486" y="445" class="pin">PB2   GPIO  → «LOW ALT»</text>
+  <text x="486" y="470" class="pin">3V3 / GND</text>
+
+  <!-- Radar -->
+  <rect class="box3" x="40" y="300" width="200" height="80"/>
+  <text x="140" y="330" class="t">Радар XM125</text>
+  <text x="140" y="350" class="ts">TX→PA10, RX←PA9</text>
+  <text x="140" y="368" class="ts">3V3, GND</text>
+  <path class="wire" d="M240,325 L470,250" marker-end="url(#a)"/>
+  <path class="wire" d="M470,275 C380,275 340,350 240,350" marker-end="url(#a)"/>
+
+  <!-- Lidar -->
+  <rect class="box3" x="40" y="410" width="200" height="80"/>
+  <text x="140" y="440" class="t">Лидар TFmini-S</text>
+  <text x="140" y="460" class="ts">TX→PA3, RX←PA2</text>
+  <text x="140" y="478" class="ts">5 В (вход), GND</text>
+  <path class="wire" d="M240,435 L470,300" marker-end="url(#a)"/>
+  <path class="wire" d="M470,325 C380,325 340,460 240,460" marker-end="url(#a)"/>
+
+  <!-- CAN transceiver -->
+  <rect class="box" x="900" y="230" width="180" height="110"/>
+  <text x="990" y="262" class="t">TJA1051</text>
+  <text x="990" y="284" class="ts">CAN-трансивер</text>
+  <text x="990" y="304" class="ts">120 Ом терминатор</text>
+  <text x="990" y="322" class="ts">CANH / CANL</text>
+  <path class="wire" d="M810,345 L900,290" marker-end="url(#a)"/>
+  <path class="wire" d="M810,370 L900,310" marker-end="url(#a)"/>
+
+  <rect class="box" x="1120" y="240" width="130" height="90"/>
+  <text x="1185" y="272" class="t">СУ БПЛА</text>
+  <text x="1185" y="294" class="ts">CAN-шина</text>
+  <text x="1185" y="314" class="ts">задание H_ср</text>
+  <path class="wire" d="M1080,285 L1120,285" marker-end="url(#a)"/>
+
+  <!-- Buzzer -->
+  <rect class="box4" x="900" y="390" width="180" height="60"/>
+  <text x="990" y="415" class="t">Зуммер (через Q1)</text>
+  <text x="990" y="435" class="ts">N-MOSFET + диод</text>
+  <path class="wire" d="M810,395 L900,415" marker-end="url(#a)"/>
+
+  <!-- LED -->
+  <rect class="box4" x="900" y="470" width="180" height="60"/>
+  <text x="990" y="495" class="t">LED (через R)</text>
+  <text x="990" y="515" class="ts">R = 1 кОм</text>
+  <path class="wire" d="M810,420 L900,495" marker-end="url(#a)"/>
+
+  <!-- Discrete output -->
+  <rect class="box4" x="900" y="550" width="180" height="70"/>
+  <text x="990" y="578" class="t">«LOW ALT»</text>
+  <text x="990" y="598" class="ts">оптопара / откр. сток</text>
+  <path class="wire" d="M810,445 L900,580" marker-end="url(#a)"/>
+
+  <!-- 3v3 rail -->
+  <path class="wire" d="M410,125 L410,470 L470,470"/>
+  <text x="430" y="150" class="lbl">+3,3 В</text>
+
+  <text x="640" y="700" class="lbl">Примечания: 1) Для макета датчики и MCU — готовые модули, соединённые проводами; своя PCB — на этапе опытного образца.</text>
+  <text x="640" y="722" class="lbl">2) TFmini-S питается от +5 В (вход 5 В-tolerant), XM125 — от +3,3 В. Уровни UART согласованы (3,3 В).</text>
+  <text x="640" y="744" class="lbl">3) «LOW ALT» — только сигнальный выход (флаг/индикация). Никаких инициирующих цепей.</text>
+  <text x="640" y="766" class="lbl">4) Резерв: I²C (PB6/PB7), SPI — для варианта XM125 по SPI.</text>
+</svg>
+</div>
+<h2>3. Требования ТЗ и их выполнение</h2>
+<div class="card"><table>
+<tr><th>№</th><th>Требование</th><th>Реализация</th><th>Статус</th></tr>
+<tr><td>1</td><td>Высота 2…10 м, перестройка от СУ БПЛА</td><td>программный порог по CAN/UART</td><td>✅</td></tr>
+<tr><td>2</td><td>РЛС (см/мм) или лидар</td><td>радар 60 ГГц XM125 / лидар TFmini-S</td><td>✅</td></tr>
+<tr><td>3</td><td>Погрешность ≤ 1 м</td><td>радар ~0,1–0,3 м; лидар ±0,06 м</td><td>✅</td></tr>
+<tr><td>4</td><td>Реакция ≤ 1 мс</td><td>обработка на MCU</td><td>✅</td></tr>
+<tr><td>5</td><td>Масса ≤ 100 г</td><td>~60 г в сборе</td><td>✅</td></tr>
+<tr><td>6</td><td>−20…+40 °C</td><td>industrial-grade</td><td>✅</td></tr>
+<tr><td>7</td><td>10g осевая / 3g радиальная</td><td>заливка, крепёж M2</td><td>✅</td></tr>
+</table></div>
+<h2>4. Перечень покупных изделий</h2>
+<div class="card"><table>
+<tr><th>Поз.</th><th>Наименование</th><th>Партномер</th><th>Интерфейс</th><th>Масса, г</th><th>Цена, $</th></tr>
+<tr><td>U1</td><td>Радар 60 ГГц</td><td>Acconeer XM125</td><td>UART/SPI</td><td>5</td><td>40</td></tr>
+<tr><td>U2</td><td>База отладки</td><td>Acconeer XC120</td><td>USB</td><td>—</td><td>60</td></tr>
+<tr><td>U3</td><td>Лидар</td><td>Benewake TFmini-S</td><td>UART/I2C</td><td>11</td><td>40</td></tr>
+<tr><td>U4</td><td>MCU</td><td>NUCLEO-G474RE</td><td>—</td><td>30</td><td>20</td></tr>
+<tr><td>U5</td><td>CAN-трансивер</td><td>TJA1051T/3</td><td>CAN</td><td>2</td><td>5</td></tr>
+<tr><td>PS1</td><td>Стабилизатор</td><td>D24V5F3</td><td>—</td><td>2</td><td>8</td></tr>
+</table></div>
+
+<h2>5. Варианты исполнения</h2>
+<div class="card"><table>
+<tr><th>Вариант</th><th>Датчик</th><th>Стоимость, ₽</th><th>Всепогодность</th><th>Точность</th><th>Рекомендация</th></tr>
+<tr><td>A</td><td>Benewake TFmini-S</td><td>~7 500</td><td>низкая</td><td>±6 см</td><td>отработка логики</td></tr>
+<tr><td><b>B</b></td><td><b>Acconeer XM125 (60 ГГц)</b></td><td><b>~16 000–22 000</b></td><td><b>высокая</b></td><td><b>высокая</b></td><td><b>основной</b></td></tr>
+<tr><td>C</td><td>Infineon Distance2Go / RFbeam SGR-24</td><td>~22 000–26 000</td><td>высокая</td><td>0,1–0,3 м</td><td>строгое ТЗ</td></tr>
+<tr><td>D</td><td>Benewake TF-Luna</td><td>~3 800</td><td>низкая</td><td>±6 см</td><td>быстрый демо</td></tr>
+</table></div>
+<h2>6. Закупка в российских магазинах</h2>
+<div class="note">Ссылки ведут на <b>поиск по партномеру</b> (стабильны, не «протухают»). Наличие и цену подтверждайте на странице. Полные списки — в docs/ВАРИАНТЫ_И_ЗАКУПКА.md и hardware/ЗАКУПКА_RU.csv.</div>
+<div class="card"><table>
+<tr><th>Магазин</th><th>Профиль</th><th>Пример ссылки</th></tr>
+<tr><td>ChipDip</td><td>ЭКБ, модули, розница</td><td><a href="https://www.chipdip.ru/search?searchtext=TFmini-S">chipdip.ru/search?searchtext=…</a></td></tr>
+<tr><td>Промэлектроника</td><td>ЭКБ</td><td><a href="https://www.promelec.ru/search/?query=TJA1051">promelec.ru/search/?query=…</a></td></tr>
+<tr><td>Терраэлектроника</td><td>ЭКБ</td><td><a href="https://www.terraelectronica.ru/search?query=NUCLEO-G474RE">terraelectronica.ru/search?query=…</a></td></tr>
+<tr><td>Элитан</td><td>ЭКБ</td><td><a href="https://www.elitan.ru/price/index.php?findtext=2N7002">elitan.ru/price/index.php?findtext=…</a></td></tr>
+<tr><td>Платан</td><td>ЭКБ</td><td><a href="https://www.platan.ru/cgi-bin/qwery.pl?code=АЛ307БМ">platan.ru/cgi-bin/qwery.pl?code=…</a></td></tr>
+<tr><td>Компэл</td><td>ЭКБ, опт</td><td><a href="https://www.compel.ru/search/?q=NUCLEO-G474RE">compel.ru/search/?q=…</a></td></tr>
+<tr><td>Ozon / AliExpress</td><td>модули, корпуса, разъёмы</td><td><a href="https://www.ozon.ru/search/?text=TFmini-S">ozon.ru/search/?text=…</a></td></tr>
+</table></div>
+
+<h2>7. Серийная себестоимость (лимит 20 000 ₽)</h2>
+<div class="note">Это <b>серийная</b> себестоимость (своя PCB, оптовые цены, без отладочных плат), а не цена макета.</div>
+<div class="card"><table>
+<tr><th>Вариант</th><th>Датчик</th><th>Серийная себестоимость, ₽</th><th>В пределах 20 000 ₽</th></tr>
+<tr><td>A</td><td>TFmini-S</td><td>≈ 4 500</td><td>✅ запас 4,4×</td></tr>
+<tr><td><b>B</b></td><td><b>Acconeer XM125 (60 ГГц)</b></td><td><b>≈ 7 000</b></td><td>✅ запас 2,8×</td></tr>
+<tr><td>C1</td><td>Infineon BGT24LTR11 (своя РЧ-плата)</td><td>≈ 8 500</td><td>✅ запас 2,3×</td></tr>
+<tr><td>C2</td><td>RFbeam SGR-24 (модуль)</td><td>≈ 17 500</td><td>✅ впритык</td></tr>
+<tr><td>D</td><td>TF-Luna</td><td>≈ 2 800</td><td>✅ запас 7×</td></tr>
+</table></div>
+<p style="font-size:13px;color:#556">Полный расчёт — в docs/СЕРИЙНАЯ_СТОИМОСТЬ.md.</p>
+
+<h2>8. Китайские компоненты (импорт разрешён)</h2>
+<div class="note">Ограничение снято. Ссылки — на поиск по партномеру. Полные списки — docs/КИТАЙСКИЕ_КОМПОНЕНТЫ.md и hardware/ЗАКУПКА_CN.csv.</div>
+<div class="card"><table>
+<tr><th>Компонент</th><th>Партномер</th><th>Производитель</th><th>Цена, ₽</th><th>Площадка</th></tr>
+<tr><td><b>Радиовысотомер 24 ГГц</b></td><td><b>NRA24</b></td><td>Nanoradar</td><td>~11 000</td><td><a href="https://aliexpress.ru/wholesale?SearchText=NRA24">AliExpress</a> / <a href="https://s.1688.com/selloffer/offer_search.htm?keywords=NRA24">1688</a></td></tr>
+<tr><td>Радар 60 ГГц</td><td>HLK-LD6002</td><td>Hi-Link</td><td>~2 000</td><td><a href="https://www.lcsc.com/search?q=LD6002">LCSC</a> / <a href="https://aliexpress.ru/wholesale?SearchText=HLK-LD6002">AliExpress</a></td></tr>
+<tr><td>Лидар</td><td>TFmini-S</td><td>Benewake</td><td>~4 000</td><td><a href="https://aliexpress.ru/wholesale?SearchText=TFmini-S">AliExpress</a></td></tr>
+<tr><td>MCU (аналог STM32)</td><td>GD32E230</td><td>GigaDevice</td><td>~150</td><td><a href="https://www.lcsc.com/search?q=GD32E230">LCSC</a></td></tr>
+<tr><td>CAN-трансивер</td><td>SIT1050</td><td>SIT</td><td>~30</td><td><a href="https://www.lcsc.com/search?q=SIT1050">LCSC</a></td></tr>
+<tr><td>DC-DC</td><td>MP1584</td><td>MPS</td><td>~80</td><td><a href="https://www.lcsc.com/search?q=MP1584">LCSC</a></td></tr>
+<tr><td>PCB + монтаж</td><td>JLCPCB</td><td>—</td><td>~300/шт.</td><td><a href="https://jlcpcb.com/">JLCPCB</a></td></tr>
+</table></div>
+<p style="font-size:13px;color:#556"><b>NRA24</b> — готовый FMCW-радиовысотомер 24 ГГц (UART/CAN), прямой китайский аналог импортных Distance2Go/SGR-24.</p>
+
+
+<h2>9a. ⛔ Чего НЕ брать: CW/доплеровские датчики</h2>
+<div class="note" style="background:#fdeaea;border-color:#b33">
+<b>ZLY TR04PLUS и подобные CW-радары (постоянная несущая 24,18 ГГц) НЕ измеряют расстояние!</b><br>
+Они дают только доплеровскую скорость. При зависании — нулевые показания. Для высотомера непригодны.<br>
+Нужны только <b>FMCW-радары</b> (24/60/77 ГГц) или <b>ToF-лидары</b> — все они измеряют дальность.
+</div>
+<h2>9. Сравнение китайских датчиков высоты</h2>
+<div class="note">Полная версия — docs/СРАВНЕНИЕ_ДАТЧИКОВ_CN.md. Позиции ⚠️ подтвердите у поставщика.</div>
+<div class="card"><table>
+<tr><th>Датчик</th><th>Класс</th><th>Дальность</th><th>Точность</th><th>Всепогод.</th><th>Цена, ₽</th><th>Итог</th></tr>
+<tr><td><b>NRA24</b></td><td>Радар 24 ГГц</td><td>0,5…50 м</td><td>±0,1 м ⚠️</td><td>✅</td><td>9 000…12 000</td><td>⭐ рекомендуется</td></tr>
+<tr><td>NRA25</td><td>Радар 24 ГГц</td><td>0,3…30 м</td><td>±0,1 м ⚠️</td><td>✅</td><td>10 000…14 000</td><td>✅</td></tr>
+<tr><td>NRA15</td><td>Радар 24 ГГц</td><td>0,5…100 м</td><td>±0,1 м ⚠️</td><td>✅</td><td>12 000…16 000</td><td>✅ избыточен</td></tr>
+<tr><td>MR72</td><td>Радар 77 ГГц</td><td>0,3…20 м</td><td>±0,1 м ⚠️</td><td>✅</td><td>14 000…20 000</td><td>✅ избыточен</td></tr>
+<tr><td>HLK-LD6002</td><td>Радар 60 ГГц</td><td>до 10 м ⚠️</td><td>~см ⚠️</td><td>✅</td><td>1 500…2 500</td><td>⚠️ проверить 10 м</td></tr>
+<tr><td>LD2410/2450/2461</td><td>Радар 24 ГГц</td><td>до 8 м</td><td>присутствие</td><td>✅</td><td>400…900</td><td>❌ не высотомер</td></tr>
+<tr><td>TFmini-S</td><td>Лидар</td><td>0,1…12 м</td><td>±6 см</td><td>❌</td><td>3 000…4 500</td><td>✅ ясная погода</td></tr>
+<tr><td>TFmini Plus</td><td>Лидар</td><td>0,1…12 м</td><td>±6 см</td><td>⚠️ IP65</td><td>4 000…5 500</td><td>✅</td></tr>
+<tr><td>TF-Luna</td><td>Лидар</td><td>0,2…8 м</td><td>±6 см</td><td>❌</td><td>1 800…2 500</td><td>⚠️ 8 м впритык</td></tr>
+<tr><td>TF02-Pro</td><td>Лидар</td><td>0,4…22 м</td><td>±1 %</td><td>❌</td><td>5 000…7 000</td><td>✅ дроновый</td></tr>
+</table></div>
+<div class="note"><b>Важно про реакцию ≤ 1 мс:</b> ни один готовый модуль не даёт 1 мс «из коробки» (типовое обновление 20…100 Гц → 10…50 мс). Требование достигается съёмом сырых данных и обработкой на своём MCU.</div>
+<p style="font-size:13px;color:#556">Схемы упрощены для макета (модульная сборка). Полный pinout и порядок сборки — в docs/ПОДКЛЮЧЕНИЕ_И_СБОРКА.md.</p>
+</div></body></html>

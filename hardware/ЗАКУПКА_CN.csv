@@ -1,0 +1,17 @@
+Вариант;Поз.;Компонент;Партномер/запрос;Кол-во;Цена_руб;Площадка;Ссылка_поиска
+C-кит;U1;Радиовысотомер Nanoradar NRA24;NRA24;1;11000;AliExpress;https://aliexpress.ru/wholesale?SearchText=NRA24
+C-кит;U1;Радиовысотомер Nanoradar NRA24;NRA24;1;11000;1688;https://s.1688.com/selloffer/offer_search.htm?keywords=NRA24
+B-кит;U1;Радар 60ГГц Hi-Link HLK-LD6002;LD6002;1;2000;LCSC;https://www.lcsc.com/search?q=LD6002
+B-кит;U1;Радар 60ГГц Hi-Link HLK-LD6002;HLK-LD6002;1;2000;AliExpress;https://aliexpress.ru/wholesale?SearchText=HLK-LD6002
+A;U3;Лидар Benewake TFmini-S;TFmini-S;1;4000;AliExpress;https://aliexpress.ru/wholesale?SearchText=TFmini-S
+A-мини;U3;Лидар Benewake TF-Luna;TF-Luna;1;2000;AliExpress;https://aliexpress.ru/wholesale?SearchText=TF-Luna
+A-дальн;U3;Лидар TF02-Pro (CAN);TF02-Pro;1;6000;AliExpress;https://aliexpress.ru/wholesale?SearchText=TF02-Pro
+B-кит;U4;MCU GD32E230 (аналог STM32);GD32E230;1;150;LCSC;https://www.lcsc.com/search?q=GD32E230
+B-кит;U4;MCU CH32V203 (RISC-V);CH32V203;1;120;LCSC;https://www.lcsc.com/search?q=CH32V203
+B-кит;U5;CAN-трансивер SIT1050 (аналог TJA1051);SIT1050;1;30;LCSC;https://www.lcsc.com/search?q=SIT1050
+B-кит;PS1;DC-DC MP1584;MP1584;1;80;LCSC;https://www.lcsc.com/search?q=MP1584
+B-кит;PS2;LDO AMS1117-3.3;AMS1117-3.3;1;20;LCSC;https://www.lcsc.com/search?q=AMS1117-3.3
+B-кит;Q1;MOSFET SI2302 (аналог 2N7002);SI2302;1;15;LCSC;https://www.lcsc.com/search?q=SI2302
+B-кит;D1;Диод 1N4148W;1N4148W;2;5;LCSC;https://www.lcsc.com/search?q=1N4148W
+B-кит;PCB;PCB 4 слоя 50x50мм (5 шт);JLCPCB;5;1500;JLCPCB;https://jlcpcb.com/
+B-кит;PCBA;Монтаж плат партией;JLCPCB PCBA;1;1000;JLCPCB;https://jlcpcb.com/pcb-assembly

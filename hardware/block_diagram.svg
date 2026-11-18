@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
+    </marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
+      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:22px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
+  </defs>
+  <text x="600" y="34" class="title">Автономная система предупреждения о малой высоте БПЛА — структурная схема</text>
+  <text x="600" y="56" class="ts">Вариант B (основной): радар 60 ГГц + лидар для сравнения · порог 2…10 м от СУ БПЛА · сигнальный выход</text>
+
+  <!-- Sensors -->
+  <rect class="box3" x="40" y="110" width="210" height="90"/>
+  <text x="145" y="145" class="t">Радар Acconeer XM125</text>
+  <text x="145" y="168" class="ts">60 ГГц, FMCW, UART</text>
+  <text x="145" y="185" class="ts">всепогодный, до ~20 м</text>
+
+  <rect class="box3" x="40" y="250" width="210" height="90"/>
+  <text x="145" y="285" class="t">Лидар Benewake TFmini-S</text>
+  <text x="145" y="308" class="ts">905 нм, UART/I²C</text>
+  <text x="145" y="325" class="ts">±6 см, 0,1…12 м</text>
+
+  <rect class="box3" x="40" y="390" width="210" height="80"/>
+  <text x="145" y="422" class="t">Инерциальный модуль</text>
+  <text x="145" y="443" class="ts">(опция) IMU/барометр</text>
+
+  <!-- MCU -->
+  <rect class="box" x="360" y="180" width="240" height="230"/>
+  <text x="480" y="220" class="t">Микроконтроллер</text>
+  <text x="480" y="242" class="t">STM32G474</text>
+  <text x="480" y="268" class="ts">приём данных датчиков</text>
+  <text x="480" y="288" class="ts">фильтр (медиана/Калман)</text>
+  <text x="480" y="308" class="ts">сравнение с порогом H_ср</text>
+  <text x="480" y="328" class="ts">формирование флага</text>
+  <text x="480" y="348" class="ts">телеметрия в СУ БПЛА</text>
+  <text x="480" y="372" class="ts">таймаут-контроль (Fail-Safe)</text>
+
+  <!-- Power -->
+  <rect class="box2" x="360" y="450" width="240" height="80"/>
+  <text x="480" y="482" class="t">Питание</text>
+  <text x="480" y="503" class="ts">BEC +5 В → LDO/DCDC +3,3 В</text>
+
+  <!-- Output -->
+  <rect class="box4" x="720" y="110" width="210" height="90"/>
+  <text x="825" y="145" class="t">Оповещение</text>
+  <text x="825" y="168" class="ts">зуммер + LED</text>
+  <text x="825" y="185" class="ts">(на борту)</text>
+
+  <rect class="box4" x="720" y="250" width="210" height="90"/>
+  <text x="825" y="285" class="t">Дискретный выход</text>
+  <text x="825" y="308" class="ts">«LOW ALT» (транзистор/</text>
+  <text x="825" y="325" class="ts">оптопара, открытый сток)</text>
+
+  <rect class="box" x="720" y="390" width="210" height="90"/>
+  <text x="825" y="425" class="t">CAN-трансивер</text>
+  <text x="825" y="448" class="ts">TJA1051</text>
+  <text x="825" y="465" class="ts">телеметрия и задание порога</text>
+
+  <!-- UAV -->
+  <rect class="box" x="1000" y="250" width="170" height="90"/>
+  <text x="1085" y="285" class="t">СУ БПЛА</text>
+  <text x="1085" y="308" class="ts">полётный контроллер</text>
+  <text x="1085" y="325" class="ts">пилот / автопилот</text>
+
+  <!-- wires sensors -> mcu -->
+  <path class="wire" d="M250,155 C310,155 310,240 360,240"/>
+  <path class="wire" d="M250,295 C310,295 310,300 360,300"/>
+  <path class="wire" d="M250,430 C310,430 310,360 360,360"/>
+
+  <!-- power -> mcu -->
+  <path class="wire" d="M480,450 L480,410"/>
+
+  <!-- mcu -> outputs -->
+  <path class="wire" d="M600,220 C660,220 660,155 720,155"/>
+  <path class="wire" d="M600,270 C660,270 660,295 720,295"/>
+  <path class="wire" d="M600,330 C660,330 660,435 720,435"/>
+
+  <!-- outputs -> UAV -->
+  <path class="wire" d="M930,295 C970,295 970,290 1000,290"/>
+  <path class="wire" d="M930,435 C970,435 970,320 1000,320"/>
+
+  <!-- power from UAV -->
+  <path class="wire" d="M1085,340 C1085,560 480,560 480,530" stroke-dasharray="6 4"/>
+
+  <text x="480" y="600" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи.</text>
+  <text x="480" y="624" class="lbl">Порог срабатывания H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
+  <text x="480" y="648" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные, исполнительных (инициирующих) цепей нет.</text>
+</svg>
