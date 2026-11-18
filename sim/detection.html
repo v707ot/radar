@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Принцип детекции расстояния — сигнализация сближения БПЛА</title>
+<style>
+  :root{
+    --bg:#080c18; --bg2:#0d1424; --line:#1b2740; --txt:#e6edf7; --dim:#8ea0bd;
+    --blue:#4da3ff; --amber:#ffb020; --red:#ff4d4d; --green:#37d67a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(1200px 700px at 30% 0%, #101a30 0%, var(--bg) 60%);
+    color:var(--txt); font-family:DejaVu Sans,Segoe UI,Roboto,Arial,sans-serif;
+    overflow:hidden;
+  }
+  .app{display:flex;height:100vh;width:100vw}
+  .stage{position:relative;flex:1 1 auto;min-width:0}
+  canvas{display:block;width:100%;height:100%}
+  .panel{
+    width:400px;flex:0 0 400px;background:linear-gradient(180deg,var(--bg2),#0a1020);
+    border-left:1px solid var(--line);overflow-y:auto;padding:16px 16px 40px;
+  }
+  h1{font-size:17px;margin:0 0 4px;letter-spacing:.2px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);
+     margin:20px 0 8px;font-weight:600}
+  .sub{font-size:12px;color:var(--dim);margin:0 0 6px;line-height:1.45}
+  .hud{position:absolute;left:16px;top:16px;pointer-events:none}
+  .dist{font-size:46px;font-weight:700;line-height:1;letter-spacing:-1px;
+        text-shadow:0 2px 20px rgba(0,0,0,.7)}
+  .dist small{font-size:16px;font-weight:500;color:var(--dim);margin-left:4px}
+  .badge{display:inline-block;margin-top:8px;padding:6px 14px;border-radius:999px;
+    font-size:14px;font-weight:700;letter-spacing:.4px;border:1px solid transparent;
+    transition:.15s}
+  .b-norm{background:rgba(55,214,122,.12);color:var(--green);border-color:rgba(55,214,122,.45)}
+  .b-warn{background:rgba(255,176,32,.14);color:var(--amber);border-color:rgba(255,176,32,.5)}
+  .b-crit{background:rgba(255,77,77,.18);color:#ff8080;border-color:rgba(255,77,77,.6);
+          animation:pulse .5s infinite alternate}
+  @keyframes pulse{from{box-shadow:0 0 0 rgba(255,77,77,0)}to{box-shadow:0 0 26px rgba(255,77,77,.55)}}
+  .readout{position:absolute;left:16px;bottom:16px;font-size:12px;color:var(--dim);
+    background:rgba(8,12,24,.6);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;line-height:1.6;pointer-events:none;backdrop-filter:blur(4px)}
+  .readout b{color:var(--txt)}
+  .row{display:flex;align-items:center;gap:10px;margin:9px 0}
+  .row label{flex:0 0 120px;font-size:12px;color:var(--dim)}
+  input[type=range]{flex:1;accent-color:var(--blue)}
+  .val{flex:0 0 52px;text-align:right;font-size:12px;color:var(--txt);font-variant-numeric:tabular-nums}
+  button{
+    background:#16223a;color:var(--txt);border:1px solid var(--line);border-radius:9px;
+    padding:9px 12px;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s
+  }
+  button:hover{background:#1d2c4a;border-color:#2b3f63}
+  button.on{background:rgba(77,163,255,.18);border-color:var(--blue);color:#bcd9ff}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .log{margin-top:8px;font-size:11.5px;line-height:1.65;color:var(--dim);
+       max-height:150px;overflow-y:auto;font-family:DejaVu Sans Mono,monospace}
+  .log div{padding:3px 0;border-bottom:1px dashed #16223a}
+  .log .t{color:var(--blue)}
+  .log .d{color:var(--amber)}
+  .log .c{color:#ff8080}
+  .card{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;
+        padding:11px 13px;font-size:12px;line-height:1.6;color:#c3d0e4}
+  .card code{background:#0a1224;border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+        font-family:DejaVu Sans Mono,monospace;color:#9ec5ff;font-size:11.5px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--dim);margin-top:8px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;
+     vertical-align:-1px}
+  .kv{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;
+      border-bottom:1px dashed #16223a}
+  .kv span:last-child{color:var(--txt);font-variant-numeric:tabular-nums}
+  @media (max-width:900px){.panel{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage">
+    <canvas id="cv"></canvas>
+
+    <div class="hud">
+      <div class="dist" id="dist">—<small>м</small></div>
+      <div class="badge b-norm" id="badge">НОРМА</div>
+    </div>
+
+    <div class="readout">
+      <div>Датчик (измерено): <b id="meas">—</b> м</div>
+      <div>Реальный зазор: <b id="real">—</b> м</div>
+      <div>Погрешность: <b id="err">—</b> м &nbsp;·&nbsp; t = 2d/c = <b id="tof">—</b> нс</div>
+      <div>Активны секторы: <b id="sec">—</b></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <h1>Детекция сближения БПЛА</h1>
+    <p class="sub">Кольцевая система 360°. Второй дрон подлетает с любой стороны —
+      при зазоре 2…10 м срабатывает сигнализация.</p>
+
+    <h2>Управление</h2>
+    <div class="btns">
+      <button id="play" class="on">⏸ Пауза</button>
+      <button id="mode">Режим: авто</button>
+      <button id="snd">🔇 Звук</button>
+      <button id="reset">↺ Сброс</button>
+    </div>
+    <div class="row"><label>Скорость</label>
+      <input type="range" id="spd" min="0.2" max="3" step="0.1" value="1">
+      <span class="val" id="spdv">1.0×</span></div>
+    <div class="row"><label>Порог H_ср</label>
+      <input type="range" id="thr" min="2" max="10" step="0.5" value="10">
+      <span class="val" id="thrv">10 м</span></div>
+    <p class="sub" id="modehint">В авто-режиме второй дрон летит по гоночной трассе
+      и сам проходит мимо с разных сторон. В ручном — перетащите его мышью.</p>
+
+    <h2>Принцип измерения</h2>
+    <div class="card">
+      Дальность по времени пролёта (ToF):
+      <code>d = c·t / 2</code><br>
+      На 10 м сигнал идёт <b>66,7 нс</b>, на 2 м — <b>13,3 нс</b>.<br>
+      Радар 60 ГГц даёт то же через разностную частоту FMCW:
+      <code>d = c·f_б / (2·B/T)</code>.
+    </div>
+
+    <h2>Кольцо секторов</h2>
+    <div class="card">
+      6 датчиков по <b>63°</b> → 6×63° = <b>378°</b>, перекрытие 18°,
+      «мёртвых зон» нет. Срабатывает тот сектор, в чьём секторе FoV
+      находится цель. Вниз — радар A121 (высота), вверх — модуль потолка.
+    </div>
+
+    <h2>Состояния</h2>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>Норма: d &gt; H_ср</span>
+      <span><i style="background:var(--amber)"></i>Сигнал: 2…H_ср</span>
+      <span><i style="background:var(--red)"></i>Критично: &lt; 2 м</span>
+    </div>
+
+    <h2>Журнал срабатываний</h2>
+    <div class="log" id="log"><div>— ожидание подходов —</div></div>
+
+    <h2>Текущие параметры</h2>
+    <div class="kv"><span>Порог срабатывания</span><span id="p1">10 м</span></div>
+    <div class="kv"><span>Реакция системы</span><span>≤ 1 мс (радар A121)</span></div>
+    <div class="kv"><span>Погрешность</span><span>≤ 0,1 м</span></div>
+    <div class="kv"><span>Обзор</span><span>360° + вниз/вверх</span></div>
+  </aside>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+let W=0, H=0, CX=0, CY=0, SCALE=14;
+
+function resize(){
+  const r = cv.parentElement.getBoundingClientRect();
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.max(1, r.width*dpr);
+  cv.height = Math.max(1, r.height*dpr);
+  cv.style.width = r.width+'px';
+  cv.style.height = r.height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  W = r.width; H = r.height;
+  CX = W/2; CY = H/2;
+  SCALE = Math.min(W,H)/44;          // ~22 м по меньшей стороне
+}
+window.addEventListener('resize', resize);
+
+/* ---------- геометрия ---------- */
+const X = m => CX + m*SCALE;
+const Y = m => CY + m*SCALE;
+
+// гоночная трасса (метры, центр = наш БПЛА)
+const WPTS = [
+  [-13,-10],[-5,-15],[6,-13],[14,-4],[8,6],[2,3],[-4,9],[-12,12],[-17,3],[-12,-4]
+];
+
+function catmull(p0,p1,p2,p3,t){
+  const t2=t*t, t3=t2*t;
+  return {
+    x:0.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
+    y:0.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)
+  };
+}
+
+function buildPath(){
+  const n = WPTS.length, pts = [];
+  const P = i => ({x:WPTS[((i%n)+n)%n][0], y:WPTS[((i%n)+n)%n][1]});
+  for(let i=0;i<n;i++){
+    const p0=P(i-1), p1=P(i), p2=P(i+1), p3=P(i+2);
+    for(let k=0;k<40;k++) pts.push(catmull(p0,p1,p2,p3,k/40));
+  }
+  const seg=[0]; let total=0;
+  for(let i=1;i<=pts.length;i++){
+    const a=pts[i-1], b=pts[i%pts.length];
+    total += Math.hypot(b.x-a.x, b.y-a.y);
+    seg.push(total);
+  }
+  return {pts, seg, total};
+}
+
+const PATH = buildPath();
+
+function pointAt(s){
+  s = ((s % PATH.total) + PATH.total) % PATH.total;
+  let lo=0, hi=PATH.seg.length-1;
+  while(lo<hi-1){ const mid=(lo+hi)>>1; if(PATH.seg[mid] <= s) lo=mid; else hi=mid; }
+  const a=PATH.pts[lo], b=PATH.pts[(lo+1)%PATH.pts.length];
+  const l0=PATH.seg[lo], l1=PATH.seg[lo+1];
+  const f = l1>l0 ? (s-l0)/(l1-l0) : 0;
+  const x = a.x+(b.x-a.x)*f, y = a.y+(b.y-a.y)*f;
+  return {x, y, ang: Math.atan2(b.y-a.y, b.x-a.x)};
+}
+
+/* ---------- состояние ---------- */
+const S = {
+  playing:true, mode:'auto', speed:1, thr:10, sound:false,
+  s:0, t:0, dist:0, measured:0, active:[], status:'norm',
+  trail:[], logT:-99, drag:false,
+  targetX:0, targetY:0, targetAng:0
+};
+const OURS = {x:0, y:0};
+
+const SECTORS = 6;
+const FOV = 63*Math.PI/180;
+const NAMES = ['В','ЮВ','Ю','ЮЗ','З','СЗ','С','СВ'];
+
+function compass(deg){
+  const d = ((deg % 360) + 360) % 360;
+  return NAMES[Math.round(d/45) % 8];
+}
+
+function activeSectors(ang){
+  const out=[];
+  for(let k=0;k<SECTORS;k++){
+    const c = k*Math.PI/3;
+    let diff = Math.abs(((ang - c + Math.PI*3) % (Math.PI*2)) - Math.PI);
+    if(diff <= FOV/2) out.push(k);
+  }
+  return out;
+}
+
+/* ---------- звук ---------- */
+let actx=null, beepAcc=0;
+function initAudio(){
+  if(!actx){
+    try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; }
+  }
+  if(actx && actx.state==='suspended') actx.resume();
+}
+function beep(freq, dur, vol){
+  if(!actx || !S.sound) return;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type='square'; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+dur);
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime+dur);
+}
+document.addEventListener('pointerdown', initAudio, {once:false});
+
+/* ---------- отрисовка ---------- */
+function drawGrid(){
+  ctx.save();
+  ctx.strokeStyle='rgba(70,110,170,.10)'; ctx.lineWidth=1;
+  for(let m=-20;m<=20;m+=5){
+    ctx.beginPath(); ctx.moveTo(X(m),0); ctx.lineTo(X(m),H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,Y(m)); ctx.lineTo(W,Y(m)); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function ring(m, col, dash, label){
+  ctx.save();
+  ctx.setLineDash(dash);
+  ctx.strokeStyle=col; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.arc(CX,CY,m*SCALE,0,Math.PI*2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col; ctx.font='11px DejaVu Sans,Arial'; ctx.textAlign='left';
+  ctx.fillText(label, CX+2, CY-m*SCALE-4);
+  ctx.restore();
+}
+
+function drawSectors(){
+  for(let k=0;k<SECTORS;k++){
+    const c=k*Math.PI/3;
+    const on = S.active.includes(k);
+    ctx.beginPath();
+    ctx.moveTo(CX,CY);
+    ctx.arc(CX,CY, 10*SCALE, c-FOV/2, c+FOV/2);
+    ctx.closePath();
+    if(on){
+      const g=ctx.createRadialGradient(CX,CY,0,CX,CY,10*SCALE);
+      g.addColorStop(0,'rgba(255,90,90,.30)');
+      g.addColorStop(1,'rgba(255,90,90,.03)');
+      ctx.fillStyle=g;
+    } else {
+      ctx.fillStyle='rgba(80,160,255,.045)';
+    }
+    ctx.fill();
+    ctx.strokeStyle = on ? 'rgba(255,120,120,.55)' : 'rgba(80,160,255,.13)';
+    ctx.lineWidth = on?1.6:1;
+    ctx.stroke();
+
+    const lx = CX + Math.cos(c)*7.2*SCALE, ly = CY + Math.sin(c)*7.2*SCALE;
+    ctx.fillStyle = on ? '#ff9c9c' : 'rgba(150,180,220,.45)';
+    ctx.font = (on?'bold ':'')+'11px DejaVu Sans,Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('S'+(k+1), lx, ly);
+  }
+}
+
+function drawBeam(){
+  if(S.dist > 10.2) return;
+  const tx=X(S.targetX), ty=Y(S.targetY);
+  ctx.save();
+  const g=ctx.createLinearGradient(CX,CY,tx,ty);
+  const hot = S.status!=='norm';
+  g.addColorStop(0, hot?'rgba(255,80,80,.85)':'rgba(120,190,255,.6)');
+  g.addColorStop(1, hot?'rgba(255,80,80,.15)':'rgba(120,190,255,.1)');
+  ctx.strokeStyle=g; ctx.lineWidth=2.2;
+  ctx.setLineDash([9,7]);
+  ctx.lineDashOffset = -((S.t*60)%16);
+  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(tx,ty); ctx.stroke();
+  ctx.restore();
+}
+
+function drawTrail(){
+  if(S.trail.length<2) return;
+  ctx.save();
+  for(let i=1;i<S.trail.length;i++){
+    const a=S.trail[i-1], b=S.trail[i];
+    const f=i/S.trail.length;
+    ctx.strokeStyle='rgba(255,140,120,'+(0.04+0.30*f)+')';
+    ctx.lineWidth=1+2.2*f;
+    ctx.beginPath(); ctx.moveTo(X(a.x),Y(a.y)); ctx.lineTo(X(b.x),Y(b.y)); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawDrone(x,y,ang,col,phase,label){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(ang);
+  const r=Math.min(W,H)*0.019;
+  for(const s of [[1,1],[1,-1],[-1,1],[-1,-1]]){
+    const ax=s[0]*r*0.78, ay=s[1]*r*0.78;
+    ctx.strokeStyle=col; ctx.lineWidth=2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(ax,ay); ctx.stroke();
+    const wob = 0.30+0.70*Math.abs(Math.sin(phase + s[0]*0.9 + s[1]*0.5));
+    ctx.beginPath(); ctx.ellipse(ax,ay, r*0.52, r*0.52*wob, 0, 0, Math.PI*2);
+    ctx.fillStyle = col+'44'; ctx.fill();
+    ctx.strokeStyle = col+'aa'; ctx.lineWidth=1.3; ctx.stroke();
+  }
+  ctx.beginPath(); ctx.arc(0,0,r*0.42,0,Math.PI*2);
+  ctx.fillStyle=col; ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=1.4; ctx.stroke();
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle=col; ctx.font='bold 11.5px DejaVu Sans,Arial';
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  ctx.fillText(label, x, y - Math.min(W,H)*0.028);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  drawGrid();
+
+  ring(10,'rgba(255,176,32,.42)',[7,6],'10 м — порог');
+  ring(5, 'rgba(120,180,255,.22)',[3,7],'5 м');
+  ring(2, 'rgba(255,77,77,.55)',[5,5],'2 м — критично');
+
+  drawSectors();
+  drawTrail();
+  drawBeam();
+
+  drawDrone(CX, CY, -Math.PI/2, '#4da3ff', S.t*10, 'НАШ БПЛА (360°)');
+
+  const col = S.status==='crit' ? '#ff4d4d' : (S.status==='warn' ? '#ffb020' : '#ff8f6b');
+  drawDrone(X(S.targetX), Y(S.targetY), S.targetAng, col, S.t*12+2, 'ДРУГОЙ БПЛА');
+}
+
+/* ---------- логика ---------- */
+function gauss(){
+  let u=0,v=0;
+  while(!u) u=Math.random();
+  while(!v) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function step(dt){
+  S.t += dt;
+  if(S.playing && S.mode==='auto'){
+    S.s += 6.0*S.speed*dt;               // ~6 м/с по трассе
+    const p = pointAt(S.s);
+    S.targetX = p.x; S.targetY = p.y; S.targetAng = p.ang;
+  }
+
+  const d = Math.hypot(S.targetX-OURS.x, S.targetY-OURS.y);
+  S.dist = d;
+  S.measured = Math.max(0, d + gauss()*0.06 + d*0.005*gauss());
+
+  const ang = Math.atan2(S.targetY-OURS.y, S.targetX-OURS.x);
+  S.active = activeSectors(ang);
+
+  const prev = S.status;
+  if(d <= 2) S.status='crit';
+  else if(d <= S.thr) S.status='warn';
+  else S.status='norm';
+
+  if(S.status!=='norm' && prev==='norm' && S.t-S.logT>1.5){
+    S.logT = S.t;
+    const dir = compass(ang*180/Math.PI);
+    addLog(S.status==='crit'?'c':'d',
+      `t=${S.t.toFixed(1)}с · подход с ${dir} · d=${d.toFixed(2)} м · S${S.active.map(k=>k+1).join('+')}`);
+  }
+
+  if(S.playing){
+    S.trail.push({x:S.targetX,y:S.targetY});
+    if(S.trail.length>140) S.trail.shift();
+  }
+
+  if(S.status==='crit'){
+    beepAcc += dt;
+    if(beepAcc>0.16){ beepAcc=0; beep(1500,0.07,0.05); }
+  } else if(S.status==='warn'){
+    beepAcc += dt;
+    if(beepAcc>0.55){ beepAcc=0; beep(900,0.09,0.045); }
+  } else beepAcc = 0;
+
+  updateHud();
+}
+
+/* ---------- HUD ---------- */
+const el = id => document.getElementById(id);
+function updateHud(){
+  el('dist').innerHTML = S.dist.toFixed(2)+'<small>м</small>';
+  const b = el('badge');
+  if(S.status==='crit'){ b.className='badge b-crit'; b.textContent='КРИТИЧНО — d < 2 м'; }
+  else if(S.status==='warn'){ b.className='badge b-warn'; b.textContent='СРАБАТЫВАНИЕ — 2…'+S.thr+' м'; }
+  else { b.className='badge b-norm'; b.textContent='НОРМА — d > '+S.thr+' м'; }
+
+  el('meas').textContent = S.measured.toFixed(2);
+  el('real').textContent = S.dist.toFixed(2);
+  el('err').textContent  = Math.abs(S.measured-S.dist).toFixed(2);
+  el('tof').textContent  = (2*S.dist/3e8*1e9).toFixed(1);
+  el('sec').textContent  = S.active.length ? S.active.map(k=>'S'+(k+1)).join(', ') : '—';
+
+  const c = S.status==='crit' ? '#ff4d4d' : (S.status==='warn' ? '#ffb020' : '#37d67a');
+  el('dist').style.color = c;
+  el('p1').textContent = S.thr+' м';
+}
+
+function addLog(cls, txt){
+  const box = el('log');
+  if(box.firstChild && box.firstChild.textContent.includes('ожидание')) box.innerHTML='';
+  const d=document.createElement('div');
+  d.innerHTML = `<span class="${cls}">▮</span> ${txt}`;
+  box.prepend(d);
+  while(box.children.length>40) box.removeChild(box.lastChild);
+}
+
+/* ---------- управление ---------- */
+el('play').onclick = e => {
+  S.playing=!S.playing;
+  e.target.textContent = S.playing?'⏸ Пауза':'▶ Пуск';
+  e.target.classList.toggle('on', S.playing);
+};
+el('mode').onclick = e => {
+  S.mode = S.mode==='auto'?'manual':'auto';
+  e.target.textContent = 'Режим: '+(S.mode==='auto'?'авто':'ручной');
+  el('modehint').textContent = S.mode==='auto'
+    ? 'В авто-режиме второй дрон летит по гоночной трассе и сам проходит мимо с разных сторон.'
+    : 'Ручной режим: перетащите второй дрон мышью в любую точку арены.';
+  S.trail.length=0;
+};
+el('snd').onclick = e => {
+  initAudio();
+  S.sound=!S.sound;
+  e.target.textContent = S.sound?'🔊 Звук':'🔇 Звук';
+  e.target.classList.toggle('on', S.sound);
+};
+el('reset').onclick = () => {
+  S.s=0; S.t=0; S.trail.length=0; el('log').innerHTML='<div>— ожидание подходов —</div>';
+};
+el('spd').oninput = e => { S.speed=+e.target.value; el('spdv').textContent=S.speed.toFixed(1)+'×'; };
+el('thr').oninput = e => { S.thr=+e.target.value; el('thrv').textContent=S.thr+' м'; };
+
+/* перетаскивание цели */
+function localPos(ev){
+  const r = cv.getBoundingClientRect();
+  return { x:ev.clientX-r.left, y:ev.clientY-r.top };
+}
+cv.addEventListener('pointerdown', ev => {
+  const p = localPos(ev);
+  const tx=X(S.targetX), ty=Y(S.targetY);
+  if(Math.hypot(p.x-tx, p.y-ty) < 46){
+    S.drag=true; cv.setPointerCapture(ev.pointerId);
+    if(S.mode==='auto'){ S.mode='manual'; el('mode').textContent='Режим: ручной'; }
+  }
+});
+cv.addEventListener('pointermove', ev => {
+  if(!S.drag) return;
+  const p = localPos(ev);
+  S.targetX = Math.max(-21, Math.min(21, (p.x-CX)/SCALE));
+  S.targetY = Math.max(-21, Math.min(21, (p.y-CY)/SCALE));
+});
+cv.addEventListener('pointerup', () => { S.drag=false; });
+
+/* ---------- цикл ---------- */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now-last)/1000);
+  last = now;
+  step(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+resize();
+const start = pointAt(0);
+S.targetX = start.x; S.targetY = start.y; S.targetAng = start.ang;
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
