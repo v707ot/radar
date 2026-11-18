@@ -90,7 +90,8 @@
     <h2>Управление</h2>
     <div class="btns">
       <button id="play" class="on">⏸ Пауза</button>
-      <button id="cam">Камера: погоня</button>
+      <button id="cam">Камера: арена</button>
+      <button id="sens" class="on">📡 Датчики</button>
       <button id="snd">🔇 Звук</button>
       <button id="reset">↺ Сброс</button>
     </div>
@@ -103,9 +104,9 @@
     <div class="row"><label>Высота полёта</label>
       <input type="range" id="alt" min="6" max="40" step="1" value="18">
       <span class="val" id="altv">18 м</span></div>
-    <p class="sub" id="camhint">Камера «погоня» следит за нашим БПЛА сзади.
-      «Обзор» — медленно облетает арену. «Сверху» — вид плана.
-      Мышью можно вращать камеру в режиме «обзор».</p>
+    <p class="sub" id="camhint">Камера «арена» показывает всю площадку — видно, как летят оба БПЛА.
+      «погоня» — вид от третьего лица за нашим БПЛА. «сверху» — вид плана.
+      В режиме «арена» мышью можно вращать камеру.</p>
 
     <h2>Принцип измерения</h2>
     <div class="card">
@@ -119,6 +120,19 @@
       6 секторов по <b>63°</b> → 378°, «мёртвых зон» нет. Срабатывает сектор,
       в котором цель. Вниз — радар A121 (высота), вверх — модуль потолка.
       Сфера радиусом H_ср показана вокруг нашего БПЛА.
+    </div>
+
+    <h2>Размещение датчиков для 360°</h2>
+    <div class="card">
+      <b>Кольцо 6 датчиков в горизонтальной плоскости</b> (по 63° FoV) —
+      перекрытие 18°, суммарно 378° → круговой обзор без «мёртвых зон».<br><br>
+      <b>Крепление:</b> каждый модуль наклонён <b>на 10° вниз</b> от горизонта,
+      чтобы захватывать и дальние объекты у земли, и цели на своей высоте.<br><br>
+      <b>Вверх</b> — 1 модуль (потолок/верхние препятствия).
+      <b>Вниз</b> — радар 60 ГГц (высота над землёй).<br><br>
+      <b>Итого 8 приёмных каналов.</b> Маркеры на модели показывают их
+      направления: серые — кольцо, голубой — вверх, зелёный — вниз.
+      Красным подсвечивается сектор, где цель.
     </div>
 
     <h2>Состояния</h2>
@@ -293,9 +307,10 @@ function otherPos(t, alt){
 /* ================= СОСТОЯНИЕ ================= */
 const S={
   playing:true, speed:1, thr:10, alt:18, sound:false,
-  camMode:'chase', t:0, camAngle:0,
+  camMode:'arena', t:0, camAngle:0,
   d3d:0, measured:0, status:'norm', active:[], bearing:0,
-  trail:[], logT:-99, prevStatus:'norm', spin:0, polyCount:0,
+  trail:[], trailOurs:[], logT:-99, prevStatus:'norm', spin:0, polyCount:0,
+  showSensors:true,
   v1:0, v2:0, ours:V(0,0,0), other:V(0,0,0), yaw1:0, yaw2:0
 };
 
@@ -362,8 +377,12 @@ function step(dt){
       `t=${S.t.toFixed(1)}с · подход с ${S.bearing} · d=${d.toFixed(2)} м · Δh=${alt} м · S${S.active.map(k=>k+1).join('+')}`);
   }
 
-  if(S.playing){ S.trail.push({x:S.other.x,y:S.other.y,z:S.other.z});
-    if(S.trail.length>220) S.trail.shift(); }
+  if(S.playing){
+    S.trail.push({x:S.other.x,y:S.other.y,z:S.other.z});
+    if(S.trail.length>220) S.trail.shift();
+    S.trailOurs.push({x:S.ours.x,y:S.ours.y,z:S.ours.z});
+    if(S.trailOurs.length>220) S.trailOurs.shift();
+  }
 
   // звук
   if(S.status==='crit'){ beepAcc+=dt; if(beepAcc>0.15){beepAcc=0; beep(1550,0.07,0.05);} }
@@ -378,17 +397,19 @@ function step(dt){
 function updateCam(dt){
   let targetPos, targetTgt, targetUp=V(0,0,1);
 
-  if(S.camMode==='chase'){
-    const f=norm(sub(oursPos(S.t+0.15,S.alt), oursPos(S.t,S.alt)));
-    targetPos=add(sub(S.ours, mul(f,9.0)), V(0,0,3.2));
-    targetTgt=add(S.ours, mul(f,10));
-  } else if(S.camMode==='orbit'){
-    S.camAngle += dt*0.16;
-    const R=62, h=34;
+  if(S.camMode==='arena'){
+    // обзор всей арены: камера наклонно сверху, видно движение обоих дронов
+    S.camAngle += dt*0.055;
+    const R=78, h=52;
     targetPos=V(R*Math.cos(S.camAngle), R*Math.sin(S.camAngle), terrainH(0,0)+h);
-    targetTgt=V(0,0,terrainH(0,0)+S.alt*0.6);
+    targetTgt=V(0,0,terrainH(0,0)+S.alt*0.5);
+  } else if(S.camMode==='chase'){
+    // вид от третьего лица: дрон смещён от центра, фон движется
+    const f=norm(sub(oursPos(S.t+0.15,S.alt), oursPos(S.t,S.alt)));
+    targetPos=add(sub(S.ours, mul(f,7.0)), V(0,0,2.4));
+    targetTgt=add(add(S.ours, mul(f,16)), V(0,0,-3));
   } else { // top
-    targetPos=V(0,0,105); targetTgt=V(0,0,0); targetUp=V(0,1,0);
+    targetPos=V(0,0,118); targetTgt=V(0,0,0); targetUp=V(0,1,0);
   }
   const k=1-Math.pow(0.001, dt);      // сглаживание
   camPos=lerp(camPos, targetPos, Math.min(1,k));
@@ -502,7 +523,7 @@ function drawScene(){
 }
 
 function drawOverlays(){
-  // 1) траектория второго дрона
+  // 1) траектория второго дрона (оранжевая)
   if(S.trail.length>1){
     ctx.save(); ctx.lineWidth=1.6;
     for(let i=1;i<S.trail.length;i++){
@@ -514,6 +535,21 @@ function drawOverlays(){
     }
     ctx.restore();
   }
+  // 1б) траектория нашего дрона (голубая)
+  if(S.trailOurs.length>1){
+    ctx.save(); ctx.lineWidth=1.6;
+    for(let i=1;i<S.trailOurs.length;i++){
+      const a=project(S.trailOurs[i-1]), b=project(S.trailOurs[i]);
+      if(!a||!b) continue;
+      const f=i/S.trailOurs.length;
+      ctx.strokeStyle=`rgba(110,175,255,${0.05+0.35*f})`;
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // 1в) маркеры датчиков на нашем дроне (6 по кругу + вверх + вниз)
+  if(S.showSensors) drawSensorMarkers();
 
   // 2) сфера детекции (3 окружности)
   const R=S.thr;
@@ -573,6 +609,42 @@ function drawOverlays(){
 
   // 5) мини-радар (вид сверху) в правом нижнем углу
   drawRadar();
+}
+
+/* Маркеры размещения датчиков: 6 секторов по кругу + вверх + вниз */
+function drawSensorMarkers(){
+  const R=0.62;                       // радиус кольца датчиков (м, в масштабе модели)
+  const cs=Math.cos(S.yaw1), sn=Math.sin(S.yaw1);
+  const dirs=[];
+  for(let k=0;k<6;k++){
+    const a=k*Math.PI/3;              // локальный азимут сектора
+    dirs.push({ lx:Math.cos(a), ly:Math.sin(a), lz:0, sec:k });
+  }
+  dirs.push({ lx:0, ly:0, lz: 1, up:true });     // вверх (потолок)
+  dirs.push({ lx:0, ly:0, lz:-1, down:true });   // вниз (земля/высота)
+
+  for(const d of dirs){
+    // повернуть локальное направление по рысканию дрона
+    const wx2 = d.lx*cs - d.ly*sn, wy2 = d.lx*sn + d.ly*cs;
+    const tipW = V(S.ours.x + wx2*R, S.ours.y + wy2*R, S.ours.z + d.lz*R*0.8);
+    const base = project(S.ours), tip = project(tipW);
+    if(!base||!tip) continue;
+    const on = (d.sec!==undefined) && S.active.includes(d.sec);
+    const isUp = !!d.up, isDown = !!d.down;
+    const col = on ? '#ff5a5a' : (isDown ? '#37d67a' : (isUp ? '#7fd0ff' : '#9db8e0'));
+    // луч обзора
+    ctx.save();
+    ctx.strokeStyle = col; ctx.globalAlpha = on ? 0.95 : 0.5;
+    ctx.lineWidth = on ? 2.2 : 1.3;
+    ctx.setLineDash(isDown||isUp ? [3,4] : []);
+    ctx.beginPath(); ctx.moveTo(base.x,base.y); ctx.lineTo(tip.x,tip.y); ctx.stroke();
+    // точка датчика
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.beginPath(); ctx.arc(tip.x,tip.y, on?5:3.2, 0, Math.PI*2);
+    ctx.fillStyle = col; ctx.fill();
+    if(on){ ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=1.4; ctx.stroke(); }
+    ctx.restore();
+  }
 }
 
 function drawRadar(){
@@ -649,17 +721,20 @@ function addLog(cls,txt){
 el('play').onclick=e=>{ S.playing=!S.playing;
   e.target.textContent=S.playing?'⏸ Пауза':'▶ Пуск';
   e.target.classList.toggle('on',S.playing); };
-const CAMS=[['chase','погоня'],['orbit','обзор'],['top','сверху']];
+const CAMS=[['arena','арена'],['chase','погоня'],['top','сверху']];
 el('cam').onclick=e=>{
   const i=CAMS.findIndex(c=>c[0]===S.camMode);
   S.camMode=CAMS[(i+1)%CAMS.length][0];
   e.target.textContent='Камера: '+CAMS.find(c=>c[0]===S.camMode)[1];
-  if(S.camMode==='orbit') S.camAngle=Math.atan2(camPos.y,camPos.x);
+  if(S.camMode==='arena') S.camAngle=Math.atan2(camPos.y,camPos.x);
 };
+el('sens').onclick=e=>{ S.showSensors=!S.showSensors;
+  e.target.textContent=S.showSensors?'📡 Датчики':'📡 Датчики';
+  e.target.classList.toggle('on',S.showSensors); };
 el('snd').onclick=e=>{ initAudio(); S.sound=!S.sound;
   e.target.textContent=S.sound?'🔊 Звук':'🔇 Звук';
   e.target.classList.toggle('on',S.sound); };
-el('reset').onclick=()=>{ S.t=0; S.trail.length=0; S.logT=-99;
+el('reset').onclick=()=>{ S.t=0; S.trail.length=0; S.trailOurs.length=0; S.logT=-99;
   el('log').innerHTML='<div>— ожидание подходов —</div>';
   camPos=V(0,-40,20); camTgt=V(0,0,10); };
 el('spd').oninput=e=>{ S.speed=+e.target.value; el('spdv').textContent=S.speed.toFixed(1)+'×'; };
@@ -670,7 +745,7 @@ el('alt').oninput=e=>{ S.alt=+e.target.value; el('altv').textContent=S.alt+' м'
 let dragging=false, lastX=0;
 cv.addEventListener('pointerdown',e=>{ dragging=true; lastX=e.clientX; cv.setPointerCapture(e.pointerId); });
 cv.addEventListener('pointermove',e=>{ if(!dragging) return;
-  if(S.camMode==='orbit'){ S.camAngle -= (e.clientX-lastX)*0.006; } lastX=e.clientX; });
+  if(S.camMode==='arena'){ S.camAngle -= (e.clientX-lastX)*0.006; } lastX=e.clientX; });
 cv.addEventListener('pointerup',()=>{ dragging=false; });
 
 /* ================= ЦИКЛ ================= */

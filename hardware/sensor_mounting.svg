@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect width="1200" height="900" fill="#ffffff"/>
+  <text x="600" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Размещение датчиков: как обеспечить обзор 360°</text>
+  <text x="600" y="58" font-size="13" text-anchor="middle" fill="#666">Кольцо 6× (наклон 10° вниз) + 1 вверх + 1 вниз = 8 каналов</text>
+
+  <!-- ================= ВИД СВЕРХУ ================= -->
+  <text x="300" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сверху — азимутальная раскладка</text>
+
+  <!-- лепестки FoV 63° с шагом 60° -->
+  <g opacity="0.30">
+    <path d="M300,380 L300,140 A240,240 0 0 1 508,260 Z" fill="#2980b9"/>
+    <path d="M300,380 L508,260 A240,240 0 0 1 508,500 Z" fill="#8e44ad"/>
+    <path d="M300,380 L508,500 A240,240 0 0 1 300,620 Z" fill="#e67e22"/>
+    <path d="M300,380 L300,620 A240,240 0 0 1 92,500 Z" fill="#16a085"/>
+    <path d="M300,380 L92,500 A240,240 0 0 1 92,260 Z" fill="#c0392b"/>
+    <path d="M300,380 L92,260 A240,240 0 0 1 300,140 Z" fill="#27ae60"/>
+  </g>
+  <!-- контуры лепестков -->
+  <g fill="none" stroke="#334" stroke-width="0.8" opacity="0.5">
+    <path d="M300,380 L300,140 A240,240 0 0 1 508,260 Z"/>
+    <path d="M300,380 L508,260 A240,240 0 0 1 508,500 Z"/>
+    <path d="M300,380 L508,500 A240,240 0 0 1 300,620 Z"/>
+    <path d="M300,380 L300,620 A240,240 0 0 1 92,500 Z"/>
+    <path d="M300,380 L92,500 A240,240 0 0 1 92,260 Z"/>
+    <path d="M300,380 L92,260 A240,240 0 0 1 300,140 Z"/>
+  </g>
+
+  <!-- корпус БПЛА -->
+  <circle cx="300" cy="380" r="40" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="300" y="378" font-size="10" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
+  <text x="300" y="392" font-size="9" text-anchor="middle" fill="#1a3a6b">(центр)</text>
+
+  <!-- модули датчиков на окружности r=70 -->
+  <g>
+    <circle cx="300" cy="310" r="7" fill="#27ae60" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="361" cy="345" r="7" fill="#2980b9" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="361" cy="415" r="7" fill="#8e44ad" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="300" cy="450" r="7" fill="#e67e22" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="239" cy="415" r="7" fill="#16a085" stroke="#1a1a1a" stroke-width="1.2"/>
+    <circle cx="239" cy="345" r="7" fill="#c0392b" stroke="#1a1a1a" stroke-width="1.2"/>
+  </g>
+  <!-- подписи секторов -->
+  <g font-size="11" font-weight="bold" text-anchor="middle">
+    <text x="300" y="298" fill="#1a5b2b">S1 · 0°</text>
+    <text x="392" y="342" fill="#1a3a6b">S2 · 60°</text>
+    <text x="392" y="424" fill="#5b2c6f">S3 · 120°</text>
+    <text x="300" y="472" fill="#8a5000">S4 · 180°</text>
+    <text x="208" y="424" fill="#0e6655">S5 · 240°</text>
+    <text x="208" y="342" fill="#8a1c10">S6 · 300°</text>
+  </g>
+
+  <!-- оси -->
+  <line x1="300" y1="380" x2="300" y2="120" stroke="#999" stroke-width="0.7" stroke-dasharray="4 3"/>
+  <text x="300" y="118" font-size="10" text-anchor="middle" fill="#666">нос = 0°</text>
+
+  <!-- дуга с углом -->
+  <path d="M300,340 A40,40 0 0 1 334,362" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
+  <text x="322" y="356" font-size="10" fill="#1a1a1a">60°</text>
+  <text x="300" y="676" font-size="12" text-anchor="middle" fill="#333">Шаг 60°, FoV 63° → перекрытие 3° с каждой стороны</text>
+  <text x="300" y="696" font-size="11" text-anchor="middle" fill="#666">6 × 63° = 378° → «мёртвых зон» нет</text>
+
+  <!-- ================= ВИД СБОКУ ================= -->
+  <text x="900" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сбоку — вертикальные каналы</text>
+
+  <!-- земля -->
+  <line x1="640" y1="640" x2="1160" y2="640" stroke="#2e7d32" stroke-width="3"/>
+  <rect x="640" y="640" width="520" height="40" fill="#e8f5e9"/>
+  <text x="900" y="668" font-size="11" text-anchor="middle" fill="#2e7d32">земля / полоса</text>
+
+  <!-- потолок -->
+  <line x1="640" y1="170" x2="1160" y2="170" stroke="#5d4037" stroke-width="3"/>
+  <rect x="640" y="130" width="520" height="40" fill="#efebe9"/>
+  <text x="900" y="156" font-size="11" text-anchor="middle" fill="#5d4037">потолок / верхнее препятствие</text>
+
+  <!-- БПЛА в центре -->
+  <rect x="855" y="380" width="90" height="34" rx="8" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="900" y="401" font-size="11" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
+
+  <!-- кольцо: наклон 10° вниз (луч вправо-вниз и влево-вниз) -->
+  <line x1="945" y1="397" x2="1140" y2="437" stroke="#2980b9" stroke-width="2"/>
+  <line x1="855" y1="397" x2="660" y2="437" stroke="#2980b9" stroke-width="2"/>
+  <text x="1075" y="428" font-size="10" fill="#1a3a6b">кольцо, наклон 10°↓</text>
+
+  <!-- конус FoV кольца (вправо) -->
+  <path d="M945,397 L1140,415 L1140,470 Z" fill="#2980b9" opacity="0.18"/>
+  <path d="M855,397 L660,415 L660,470 Z" fill="#2980b9" opacity="0.18"/>
+
+  <!-- луч вверх -->
+  <line x1="900" y1="380" x2="900" y2="180" stroke="#7fd0ff" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <path d="M900,180 L872,240 L928,240 Z" fill="#7fd0ff" opacity="0.35"/>
+  <text x="930" y="200" font-size="10" fill="#0b6b9c">1× ToF вверх (потолок)</text>
+
+  <!-- луч вниз -->
+  <line x1="900" y1="414" x2="900" y2="632" stroke="#37d67a" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <path d="M900,632 L872,572 L928,572 Z" fill="#37d67a" opacity="0.35"/>
+  <text x="930" y="600" font-size="10" fill="#1a7a44">1× радар 60 ГГц вниз (высота)</text>
+
+  <!-- размер высоты -->
+  <line x1="1160" y1="414" x2="1160" y2="632" stroke="#666" stroke-width="0.8"/>
+  <text x="1170" y="528" font-size="11" fill="#333">H = 2…10 м</text>
+
+  <!-- ================= НИЖНЯЯ ПАНЕЛЬ: ПОЧЕМУ ТАК ================= -->
+  <rect x="60" y="740" width="1080" height="130" rx="10" fill="#f7f9fc" stroke="#d0d7e2"/>
+  <text x="80" y="766" font-size="14" font-weight="bold" fill="#1a2330">Почему именно так</text>
+  <text x="80" y="792" font-size="12" fill="#333">• 6 датчиков: при FoV 63° шаг 60° &lt; 63° → сплошное покрытие. 5 датчиков дали бы зоны 9°.</text>
+  <text x="80" y="814" font-size="12" fill="#333">• Наклон 10° вниз: видит и землю впереди при снижении, и стены на высоте полёта.</text>
+  <text x="80" y="836" font-size="12" fill="#333">• Ноль азимута = нос БПЛА: сектор S1 всегда смотрит вперёд, независимо от эволюций.</text>
+  <text x="80" y="858" font-size="12" fill="#333">• Выносные кронштейны: винты и корпус не затеняют обзор кольца.</text>
+</svg>
