@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="820" viewBox="0 0 1100 820" font-family="DejaVu Sans, Arial, sans-serif">
+  <rect width="1100" height="820" fill="#ffffff"/>
+  <text x="550" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Схема работы — конечный автомат</text>
+  <text x="550" y="58" font-size="13" text-anchor="middle" fill="#666">Автономный датчик оповещения о малой высоте БПЛА (сигнальный)</text>
+
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#333"/>
+    </marker>
+    <marker id="arrr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arrg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="#27ae60"/>
+    </marker>
+  </defs>
+
+  <!-- INIT -->
+  <rect x="430" y="85" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="550" y="112" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">INIT</text>
+  <text x="550" y="130" font-size="11" text-anchor="middle" fill="#333">инициализация UART, CAN, таймеров</text>
+
+  <!-- SELF-TEST -->
+  <rect x="430" y="175" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="550" y="202" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">SELF-TEST</text>
+  <text x="550" y="220" font-size="11" text-anchor="middle" fill="#333">проверка датчика и связи</text>
+
+  <!-- CONFIG -->
+  <rect x="430" y="265" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="550" y="292" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">CONFIG</text>
+  <text x="550" y="310" font-size="11" text-anchor="middle" fill="#333">приём уставки H_ср по CAN</text>
+
+  <!-- MEASURE -->
+  <rect x="430" y="355" width="240" height="56" rx="10" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+  <text x="550" y="382" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a5b2b">MEASURE</text>
+  <text x="550" y="400" font-size="11" text-anchor="middle" fill="#333">измерение + фильтр (медиана/Калман)</text>
+
+  <!-- DECISION -->
+  <polygon points="550,445 700,500 550,555 400,500" fill="#fff8e1" stroke="#e0a800" stroke-width="2"/>
+  <text x="550" y="494" font-size="13" font-weight="bold" text-anchor="middle" fill="#8a6100">DECISION</text>
+  <text x="550" y="512" font-size="11" text-anchor="middle" fill="#333">h + v·T ≤ H_ср ?</text>
+
+  <!-- NORMAL -->
+  <rect x="120" y="470" width="210" height="60" rx="10" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
+  <text x="225" y="497" font-size="14" font-weight="bold" text-anchor="middle" fill="#1a5b2b">NORMAL</text>
+  <text x="225" y="515" font-size="11" text-anchor="middle" fill="#333">LED зелёный, флаг = 0</text>
+
+  <!-- WARNING -->
+  <rect x="770" y="470" width="210" height="60" rx="10" fill="#fdeaea" stroke="#c0392b" stroke-width="2"/>
+  <text x="875" y="497" font-size="14" font-weight="bold" text-anchor="middle" fill="#8a1c10">WARNING</text>
+  <text x="875" y="515" font-size="11" text-anchor="middle" fill="#333">зуммер + LED красный, флаг = 1</text>
+
+  <!-- FAIL-SAFE -->
+  <rect x="430" y="640" width="240" height="60" rx="10" fill="#fdeaea" stroke="#c0392b" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="550" y="667" font-size="14" font-weight="bold" text-anchor="middle" fill="#8a1c10">FAIL-SAFE</text>
+  <text x="550" y="685" font-size="11" text-anchor="middle" fill="#333">нет данных &gt; таймаут → аварийный флаг</text>
+
+  <!-- arrows main chain -->
+  <line x1="550" y1="141" x2="550" y2="173" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="550" y1="231" x2="550" y2="263" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="550" y1="321" x2="550" y2="353" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="550" y1="411" x2="550" y2="443" stroke="#333" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- DECISION -> NORMAL (no) -->
+  <line x1="400" y1="500" x2="332" y2="500" stroke="#27ae60" stroke-width="2" marker-end="url(#arrg)"/>
+  <text x="366" y="492" font-size="11" text-anchor="middle" fill="#1a5b2b">нет</text>
+
+  <!-- DECISION -> WARNING (yes) -->
+  <line x1="700" y1="500" x2="768" y2="500" stroke="#c0392b" stroke-width="2" marker-end="url(#arrr)"/>
+  <text x="734" y="492" font-size="11" text-anchor="middle" fill="#8a1c10">да</text>
+
+  <!-- NORMAL -> MEASURE (loop) -->
+  <path d="M120,500 C60,500 60,383 428,383" fill="none" stroke="#27ae60" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrg)"/>
+  <text x="60" y="440" font-size="10" fill="#1a5b2b">цикл</text>
+
+  <!-- WARNING -> MEASURE (loop back with hysteresis) -->
+  <path d="M980,500 C1040,500 1040,383 672,383" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrr)"/>
+  <text x="1000" y="440" font-size="10" fill="#8a1c10">гистерезис</text>
+
+  <!-- SELF-TEST -> FAIL-SAFE (error) -->
+  <path d="M670,203 C820,203 820,670 672,670" fill="none" stroke="#c0392b" stroke-width="1.6" marker-end="url(#arrr)"/>
+  <text x="806" y="200" font-size="10" fill="#8a1c10">ошибка</text>
+
+  <!-- FAIL-SAFE -> CONFIG (recovery) -->
+  <path d="M430,670 C280,670 280,293 428,293" fill="none" stroke="#3367d6" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="250" y="480" font-size="10" fill="#1a3a6b">восстановление</text>
+
+  <!-- timeout note from MEASURE -->
+  <text x="550" y="600" font-size="11" text-anchor="middle" fill="#8a1c10">таймаут-контроль (из MEASURE при пропадании данных)</text>
+  <line x1="550" y1="585" x2="550" y2="638" stroke="#c0392b" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arrr)"/>
+
+  <!-- legend -->
+  <rect x="60" y="740" width="980" height="60" rx="8" fill="#f7f7f7" stroke="#ddd"/>
+  <text x="80" y="762" font-size="12" font-weight="bold" fill="#333">Обозначения:</text>
+  <rect x="80" y="774" width="14" height="14" fill="#e8f5e9" stroke="#27ae60"/><text x="100" y="786" font-size="11" fill="#333">рабочие состояния</text>
+  <rect x="240" y="774" width="14" height="14" fill="#fff8e1" stroke="#e0a800"/><text x="260" y="786" font-size="11" fill="#333">решение</text>
+  <rect x="360" y="774" width="14" height="14" fill="#fdeaea" stroke="#c0392b"/><text x="380" y="786" font-size="11" fill="#333">предупреждение / авария</text>
+  <line x1="580" y1="781" x2="620" y2="781" stroke="#27ae60" stroke-width="2" stroke-dasharray="5 4"/><text x="628" y="786" font-size="11" fill="#333">циклы возврата</text>
+  <text x="760" y="786" font-size="11" fill="#333">Выходы только сигнальные (зуммер, LED, флаг, CAN)</text>
+</svg>
