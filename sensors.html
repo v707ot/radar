@@ -1,0 +1,849 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Датчики: полные наименования и технические характеристики</title>
+<style>
+body{font-family:DejaVu Sans,Arial,sans-serif;margin:0;background:#f6f8fb;color:#1a2330}
+.wrap{max-width:1000px;margin:0 auto;padding:24px}
+h1{font-size:26px;color:#12283f} h2{font-size:19px;color:#12283f;margin-top:32px;border-bottom:1px solid #dbe3ee;padding-bottom:6px}
+h3{font-size:16px;color:#1a3a6b;margin-top:22px}
+.card{background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:18px;margin:16px 0;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:12px 0}
+td,th{border:1px solid #cfd8e6;padding:6px 8px;text-align:left} th{background:#eef4fb}
+code{background:#eef2f8;padding:1px 5px;border-radius:4px;font-size:13px}
+pre{background:#0d1a33;color:#cfe0ff;padding:12px;border-radius:8px;overflow:auto}
+pre code{background:none;color:inherit}
+blockquote{border-left:4px solid #7fb8ff;background:#f0f6ff;margin:12px 0;padding:8px 14px;color:#33475f}
+a{color:#2563c9}
+.top{background:#0d1a33;color:#cfe0ff;padding:10px 18px;border-radius:8px;margin-bottom:8px}
+.top a{color:#7fb8ff}
+</style></head><body><div class="wrap">
+<div class="top">📋 Автономное сигнальное устройство малой высоты БПЛА ·
+<a href="index.html">Главная</a> · <a href="project.html">Проект</a> ·
+<a href="sensors.html">Датчики</a> ·
+<a href="sim/detection3d.html">3D-демо</a> · <a href="sim/detection.html">2D-демо</a></div>
+<h1 id="_1">Датчики: полные наименования и технические характеристики</h1>
+<p>Справочник по всем датчикам, рассматриваемым в проекте. Для каждого приведено
+<strong>полное заводское наименование</strong> (производитель + партномер + назначение) и
+<strong>технические характеристики</strong> из паспорта (datasheet) производителя.</p>
+<blockquote>
+<p><strong>Требования ТЗ, по которым оцениваются датчики:</strong> высота H = 2…10 м,
+погрешность ≤ 1 м, реакция ≤ 1 мс, масса ≤ 100 г (всего изделия),
+температура −20…+40 °C, перегрузки 10g осевая / 3g радиальная,
+серийная себестоимость ≤ 20 000 ₽.</p>
+<p><strong>О достоверности данных.</strong> Значения, подтверждённые по официальным
+datasheet/страницам производителей на 18.11.2026, помечены ✅. Значения,
+требующие подтверждения у поставщика (⚠️), приведены по каталогам и подлежат
+проверке перед закупкой.</p>
+</blockquote>
+<hr />
+<h2 id="1">1. Датчик основного канала (вниз, высота до земли)</h2>
+<h3 id="11-acconeer-a121-60-pcr">1.1. Acconeer A121 — импульсный когерентный радар 60 ГГц (PCR)</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Acconeer A121 Pulsed Coherent Radar (PCR) sensor, 60 GHz</td>
+</tr>
+<tr>
+<td><strong>Модуль-носитель</strong></td>
+<td>Acconeer XM125 (модуль с A121 + SPI/UART), отладочный — XE121</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>Acconeer AB (Швеция)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>импульсный когерентный радар (PCR), мм-диапазон</td>
+</tr>
+<tr>
+<td><strong>Рабочая частота</strong></td>
+<td>60 ГГц (57…64 ГГц, ISM) ✅</td>
+</tr>
+<tr>
+<td><strong>Диапазон измерения</strong></td>
+<td>до 20 м (зависит от конфигурации и цели) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Разрешение по дальности</strong></td>
+<td>мм (сантиметровый и лучше) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Поле зрения (FoV)</strong></td>
+<td>~±40° (антенна с линзой/рупором) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Частота обновления</strong></td>
+<td>до нескольких кГц (при съёме сырых данных) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>SPI (сырые данные), UART (обработанные) ✅</td>
+</tr>
+<tr>
+<td><strong>Напряжение питания</strong></td>
+<td>1,8 В (ядро), 3,3 В (интерфейс) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Потребление</strong></td>
+<td>десятки мВт ⚠️</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>&lt; 5 г (модуль XM125) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Рабочая температура</strong></td>
+<td>−40…+85 °C ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена</strong></td>
+<td>3 500…4 500 ₽ (в РФ ~16 000…22 000 ₽ за комплект)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Почему выбран основным:</strong> единственный из доступных, кто реально даёт
+<strong>реакцию ≤ 1 мс</strong> — через прямой съём сырых данных (SPI) и собственную обработку
+на MCU. Всепогодный (туман, дождь, пыль), не зависит от освещённости и грунта.</p>
+<blockquote>
+<p>✅ Подтверждено: рабочая частота 60 ГГц, интерфейс SPI, класс PCR.
+⚠️ Подтвердить: точный диапазон, разрешение, потребление, масса — по
+официальному datasheet A121 (docs.acconeer.com) перед закупкой.</p>
+</blockquote>
+<hr />
+<h3 id="12-st-vl53l5cx-tof-88-940-360">1.2. ST VL53L5CX — ToF-матрица 8×8, 940 нм (для кольца 360°)</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>STMicroelectronics VL53L5CX Time-of-Flight 8×8 multizone ranging sensor</td>
+</tr>
+<tr>
+<td><strong>Модуль-носитель</strong></td>
+<td>плата-обвязка (например, SparkFun SEN-18642 / Adafruit 5425)</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>STMicroelectronics (Швейцария)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>ToF (время пролёта), лазер 940 нм (класс 1)</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>до <strong>4 м</strong> (4000 мм) по всем зонам ✅</td>
+</tr>
+<tr>
+<td><strong>Зон измерения</strong></td>
+<td>8×8 = 64 зоны (программируется 4×4) ✅</td>
+</tr>
+<tr>
+<td><strong>Поле зрения (FoV)</strong></td>
+<td><strong>63° диагональ</strong> (квадратное, DOE) ✅</td>
+</tr>
+<tr>
+<td><strong>Частота обновления</strong></td>
+<td>до <strong>15 Гц</strong> ✅</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>I²C ✅</td>
+</tr>
+<tr>
+<td><strong>Напряжение питания</strong></td>
+<td>3,3 В ✅</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~1 г (датчик), ~3 г (плата) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Рабочая температура</strong></td>
+<td>−30…+85 °C ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена</strong></td>
+<td>~1 000 ₽ (модуль)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль в проекте:</strong> 6 таких датчиков образуют кольцо кругового обзора
+(6 × 63° = 378°, перекрытие 3° на стык) + 1 вверх (потолок).</p>
+<blockquote>
+<p>✅ Подтверждено: 63° диагональ, 4 м, 15 Гц, I²C, 3,3 В (SparkFun SEN-18642).
+⚠️ Ограничение: только <strong>4 м</strong> — для стен достаточно, для 10 м во все стороны
+нужен мм-радар.</p>
+</blockquote>
+<hr />
+<h2 id="2-tof-905">2. Лазерные дальномеры (лидары, ToF 905 нм) — сравнение и резерв</h2>
+<h3 id="21-benewake-tfmini-s">2.1. Benewake TFmini-S</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Benewake TFmini-S single-point micro LiDAR distance sensor</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>Benewake (Бэйхан, Китай)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>ToF-лидар, лазер 850 нм (класс 1) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>0,1…12 м ✅</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>±6 см ✅</td>
+</tr>
+<tr>
+<td><strong>Частота обновления</strong></td>
+<td>100…1000 Гц ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>UART / I²C ✅</td>
+</tr>
+<tr>
+<td><strong>Напряжение питания</strong></td>
+<td>5 В ✅</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~11 г ✅</td>
+</tr>
+<tr>
+<td><strong>Рабочая температура</strong></td>
+<td>−20…+60 °C ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена (РФ)</strong></td>
+<td>3 065…5 490 ₽ (медиана ~4 183 ₽) ✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> резерв/сравнение. Точно (±6 см), но <strong>зависит от погоды</strong> (туман, дождь)
+и не даёт 1 мс «из коробки».</p>
+<h3 id="22-benewake-tf-luna">2.2. Benewake TF-Luna</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Benewake TF-Luna micro LiDAR distance sensor</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>0,2…<strong>8 м</strong> ✅</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>±6 см ✅</td>
+</tr>
+<tr>
+<td><strong>Частота обновления</strong></td>
+<td>до 250 Гц ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>UART / I²C ✅</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~5 г ✅</td>
+</tr>
+<tr>
+<td><strong>Цена (РФ)</strong></td>
+<td>1 800…3 200 ₽ ✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> демо-вариант «максимально дёшево». Для ТЗ (10 м) — впритык.</p>
+<h3 id="23-benewake-tfmini-plus-ip65">2.3. Benewake TFmini Plus (IP65)</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Benewake TFmini Plus IP65 micro LiDAR distance sensor</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>0,1…12 м ✅</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>±6 см ✅</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>UART / I²C ✅</td>
+</tr>
+<tr>
+<td><strong>Защита</strong></td>
+<td><strong>IP65</strong> ✅</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~12 г ✅</td>
+</tr>
+<tr>
+<td><strong>Цена (РФ)</strong></td>
+<td>4 148…5 656 ₽ ✅</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> защищённый лидар для улицы (пыль/брызги), если IP65 критично.</p>
+<hr />
+<h2 id="3-24-fmcw-">3. Радары 24 ГГц (FMCW, см-диапазон) — помехозащищённый вариант</h2>
+<h3 id="31-nanoradar-nra24">3.1. Nanoradar NRA24</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Nanoradar NRA24 24 GHz FMCW radar altimeter (height sensor)</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>Nanoradar (Хунань, Китай)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>FMCW-радар, 24 ГГц</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>0,5…50 м ⚠️</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>±0,1 м ⚠️</td>
+</tr>
+<tr>
+<td><strong>Частота обновления</strong></td>
+<td>20…100 Гц ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>UART / CAN ⚠️</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~50 г ⚠️</td>
+</tr>
+<tr>
+<td><strong>Рабочая температура</strong></td>
+<td>−40…+85 °C ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена (РФ)</strong></td>
+<td><strong>22 000…26 000 ₽</strong> ⚠️ — выше лимита 20 000 ₽</td>
+</tr>
+<tr>
+<td><strong>Цена (Китай)</strong></td>
+<td>~9 000…12 000 ₽ ⚠️</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> специализированный радиовысотомер, помехозащищённый, всепогодный.
+⚠️ В РФ <strong>превышает лимит</strong> — дешевле только прямая закупка в Китае.</p>
+<h3 id="32-infineon-bgt24ltr11">3.2. Infineon BGT24LTR11</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Infineon BGT24LTR11N16 24 GHz radar transceiver MMIC</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>Infineon Technologies (Германия)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>FMCW-радар, 24 ГГц, SiGe:C 200 ГГц транзисторы ✅</td>
+</tr>
+<tr>
+<td><strong>Тип</strong></td>
+<td><strong>чип-трансивер</strong> (нужна своя РЧ-плата) ✅</td>
+</tr>
+<tr>
+<td><strong>Питание VCO</strong></td>
+<td>со встроенной термокомпенсацией ✅</td>
+</tr>
+<tr>
+<td><strong>Потребление</strong></td>
+<td>низкое ✅</td>
+</tr>
+<tr>
+<td><strong>Защита</strong></td>
+<td>полная ESD-защита ✅</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>аналоговый (I/Q выходы), однотактные RF/IF ✅</td>
+</tr>
+<tr>
+<td><strong>Цена</strong></td>
+<td>~8 500 ₽ (серийная плата)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> база для <strong>своей</strong> РЧ-платы — самая дешёвая серийная реализация
+24-ГГц варианта. Требует проектирования PCB и обработки сырых данных.</p>
+<h3 id="33-rfbeam-sgr-24">3.3. RFbeam SGR-24</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>RFbeam SGR-24 24 GHz radar transceiver module</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>RFbeam Microwave GmbH (Швейцария)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>FMCW-радар, 24 ГГц</td>
+</tr>
+<tr>
+<td><strong>Диапазон</strong></td>
+<td>до 30 м (зависит от цели) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>аналоговый (I/Q) ⚠️</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~30…50 г ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена</strong></td>
+<td>~17 500…20 000 ₽ ⚠️ (серийная ~17 500 ₽)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> готовый модуль 24 ГГц (в отличие от чипа Infineon) — но дорогой,
+серийная себестоимость «впритык» к лимиту.</p>
+<hr />
+<h2 id="4-60">4. Радары 60 ГГц — дешёвая альтернатива (китайские)</h2>
+<h3 id="41-hi-link-hlk-ld6002">4.1. Hi-Link HLK-LD6002</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>Hi-Link HLK-LD6002 60 GHz mmWave radar module (UART)</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>Shenzhen Hi-Link Electronic Co. (Китай)</td>
+</tr>
+<tr>
+<td><strong>Принцип действия</strong></td>
+<td>FMCW-радар, 60 ГГц</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>до 10 м ⚠️</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>~см ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>UART ⚠️</td>
+</tr>
+<tr>
+<td><strong>Масса</strong></td>
+<td>~5 г ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена (Китай)</strong></td>
+<td>1 500…2 500 ₽ ⚠️</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> минимальная цена среди всепогодных. ⚠️ Подтвердить дальность 10 м.
+Модификации: <strong>HLK-LD6004</strong> (до 6 м), <strong>HLK-LD6001</strong> (до 5 м).</p>
+<blockquote>
+<p>⛔ <strong>Не путать</strong> с Hi-Link <strong>HLK-LD2410 / LD2450 / LD2461</strong> — это датчики
+<em>присутствия</em> (детектор движения человека), они <strong>не измеряют дальность</strong>
+и для высотомера непригодны.</p>
+</blockquote>
+<hr />
+<h2 id="5">5. Ультразвуковые датчики (для полноты картины)</h2>
+<h3 id="51-maxbotix-mb1240-xl-ez4">5.1. MaxBotix MB1240 (XL-EZ4)</h3>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Полное наименование</strong></td>
+<td>MaxBotix MB1240 XL-EZ4 ultrasonic range finder</td>
+</tr>
+<tr>
+<td><strong>Производитель</strong></td>
+<td>MaxBotix Inc. (США)</td>
+</tr>
+<tr>
+<td><strong>Дальность</strong></td>
+<td>0,2…7,65 м ⚠️</td>
+</tr>
+<tr>
+<td><strong>Точность</strong></td>
+<td>~1 см ⚠️</td>
+</tr>
+<tr>
+<td><strong>Интерфейс</strong></td>
+<td>аналог / UART ⚠️</td>
+</tr>
+<tr>
+<td><strong>Цена</strong></td>
+<td>~4 000…6 000 ₽ ⚠️</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Роль:</strong> не рекомендуется — на БПЛА потоки от винтов срывают эхо; реально
+работает на 2…5 м на малых скоростях.</p>
+<hr />
+<h2 id="6">6. Сводная таблица характеристик</h2>
+<table>
+<thead>
+<tr>
+<th>Датчик</th>
+<th>Полное наименование</th>
+<th>Тип</th>
+<th>Дальность</th>
+<th>Точность</th>
+<th>Частота</th>
+<th>Интерфейс</th>
+<th>Масса</th>
+<th>Т, °C</th>
+<th>Цена, ₽</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A121</strong></td>
+<td>Acconeer A121 (XM125)</td>
+<td>Радар 60 ГГц PCR</td>
+<td>до 20 м ⚠️</td>
+<td>мм ⚠️</td>
+<td>до кГц ⚠️</td>
+<td>SPI/UART</td>
+<td>&lt;5 г ⚠️</td>
+<td>−40…+85 ⚠️</td>
+<td>3 500…22 000</td>
+</tr>
+<tr>
+<td><strong>VL53L5CX</strong></td>
+<td>ST VL53L5CX 8×8</td>
+<td>ToF 940 нм</td>
+<td><strong>4 м</strong> ✅</td>
+<td>см ⚠️</td>
+<td><strong>15 Гц</strong> ✅</td>
+<td>I²C ✅</td>
+<td>~1 г</td>
+<td>−30…+85 ⚠️</td>
+<td>~1 000</td>
+</tr>
+<tr>
+<td><strong>TFmini-S</strong></td>
+<td>Benewake TFmini-S</td>
+<td>Лидар 850 нм</td>
+<td>12 м ✅</td>
+<td>±6 см ✅</td>
+<td>100…1000 Гц ⚠️</td>
+<td>UART/I²C</td>
+<td>11 г ✅</td>
+<td>−20…+60 ⚠️</td>
+<td>3 065…5 490</td>
+</tr>
+<tr>
+<td><strong>TF-Luna</strong></td>
+<td>Benewake TF-Luna</td>
+<td>Лидар</td>
+<td>8 м ✅</td>
+<td>±6 см ✅</td>
+<td>до 250 Гц ⚠️</td>
+<td>UART/I²C</td>
+<td>5 г ✅</td>
+<td>−20…+60 ⚠️</td>
+<td>1 800…3 200</td>
+</tr>
+<tr>
+<td><strong>TFmini Plus</strong></td>
+<td>Benewake TFmini Plus</td>
+<td>Лидар IP65</td>
+<td>12 м ✅</td>
+<td>±6 см ✅</td>
+<td>100…1000 Гц ⚠️</td>
+<td>UART/I²C</td>
+<td>12 г ✅</td>
+<td>−20…+60 ⚠️</td>
+<td>4 148…5 656</td>
+</tr>
+<tr>
+<td><strong>NRA24</strong></td>
+<td>Nanoradar NRA24</td>
+<td>Радар 24 ГГц FMCW</td>
+<td>50 м ⚠️</td>
+<td>±0,1 м ⚠️</td>
+<td>20…100 Гц ⚠️</td>
+<td>UART/CAN</td>
+<td>~50 г ⚠️</td>
+<td>−40…+85 ⚠️</td>
+<td>9 000…26 000</td>
+</tr>
+<tr>
+<td><strong>BGT24LTR11</strong></td>
+<td>Infineon BGT24LTR11N16</td>
+<td>Чип-радар 24 ГГц</td>
+<td>(зависит)</td>
+<td>—</td>
+<td>—</td>
+<td>аналог</td>
+<td>~1 г ⚠️</td>
+<td>−40…+85 ⚠️</td>
+<td>~8 500 (плата)</td>
+</tr>
+<tr>
+<td><strong>SGR-24</strong></td>
+<td>RFbeam SGR-24</td>
+<td>Модуль 24 ГГц</td>
+<td>до 30 м ⚠️</td>
+<td>—</td>
+<td>—</td>
+<td>аналог</td>
+<td>~30…50 г ⚠️</td>
+<td>−40…+85 ⚠️</td>
+<td>~17 500</td>
+</tr>
+<tr>
+<td><strong>HLK-LD6002</strong></td>
+<td>Hi-Link HLK-LD6002</td>
+<td>Радар 60 ГГц</td>
+<td>до 10 м ⚠️</td>
+<td>~см ⚠️</td>
+<td>—</td>
+<td>UART ⚠️</td>
+<td>~5 г ⚠️</td>
+<td>−40…+85 ⚠️</td>
+<td>1 500…2 500</td>
+</tr>
+<tr>
+<td><strong>MB1240</strong></td>
+<td>MaxBotix MB1240 XL-EZ4</td>
+<td>Ультразвук</td>
+<td>7,65 м ⚠️</td>
+<td>~1 см ⚠️</td>
+<td>—</td>
+<td>аналог/UART</td>
+<td>~10 г ⚠️</td>
+<td>−40…+65 ⚠️</td>
+<td>~4 000…6 000</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7">7. Соответствие требованиям ТЗ</h2>
+<table>
+<thead>
+<tr>
+<th>Датчик</th>
+<th>Дальн. 10 м</th>
+<th>Погр. ≤1 м</th>
+<th>Реакц. ≤1 мс</th>
+<th>Масса ≤100 г</th>
+<th>Всепогод.</th>
+<th>Итог</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A121</strong> (60 ГГц)</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ (при SPI)</td>
+<td>✅</td>
+<td>✅</td>
+<td>⭐ <strong>основной</strong></td>
+</tr>
+<tr>
+<td><strong>VL53L5CX</strong> (ToF)</td>
+<td>❌ 4 м</td>
+<td>✅</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>❌</td>
+<td>кольцо 360° (стены)</td>
+</tr>
+<tr>
+<td><strong>TFmini-S</strong> (лидар)</td>
+<td>✅ 12 м</td>
+<td>✅ ±6 см</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>❌</td>
+<td>резерв</td>
+</tr>
+<tr>
+<td><strong>TF-Luna</strong> (лидар)</td>
+<td>⚠️ 8 м</td>
+<td>✅</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>❌</td>
+<td>демо</td>
+</tr>
+<tr>
+<td><strong>NRA24</strong> (24 ГГц)</td>
+<td>✅ 50 м</td>
+<td>✅ ±0,1 м</td>
+<td>✅ (при сырых)</td>
+<td>⚠️ 50 г</td>
+<td>✅</td>
+<td>помехозащ. (дорого в РФ)</td>
+</tr>
+<tr>
+<td><strong>BGT24LTR11</strong> (24 ГГц)</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅ (при сырых)</td>
+<td>✅</td>
+<td>✅</td>
+<td>своя PCB</td>
+</tr>
+<tr>
+<td><strong>HLK-LD6002</strong> (60 ГГц)</td>
+<td>⚠️ 10 м</td>
+<td>⚠️</td>
+<td>⚠️</td>
+<td>✅</td>
+<td>✅</td>
+<td>бюджетно</td>
+</tr>
+<tr>
+<td><strong>MB1240</strong> (ультразвук)</td>
+<td>❌</td>
+<td>⚠️</td>
+<td>❌</td>
+<td>✅</td>
+<td>⚠️</td>
+<td>не рекомендован</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8">8. Выбранная комплектация (итог)</h2>
+<table>
+<thead>
+<tr>
+<th>Позиция</th>
+<th>Полное наименование</th>
+<th>Кол-во</th>
+<th>Роль</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U1</td>
+<td>Acconeer A121 (модуль XM125)</td>
+<td>1</td>
+<td>высота вниз, 2…10 м, ≤1 мс</td>
+</tr>
+<tr>
+<td>U2…U7</td>
+<td>ST VL53L5CX (8×8 ToF)</td>
+<td>6</td>
+<td>кольцо обзора 360° (стены)</td>
+</tr>
+<tr>
+<td>U8</td>
+<td>ST VL53L5CX</td>
+<td>1</td>
+<td>обзор вверх (потолок)</td>
+</tr>
+<tr>
+<td>—</td>
+<td>(резерв) Benewake TFmini-S</td>
+<td>1</td>
+<td>сравнение/натурные испытания</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Итого: 8 датчиков</strong> (1 радар 60 ГГц + 7 ToF-матриц).
+Масса комплекта датчиков ≈ <strong>12 г</strong>; изделие целиком ≈ <strong>81 г</strong> (с батареей).
+Датчики ≈ <strong>10 500 ₽</strong>; изделие целиком ≈ <strong>18 200 ₽</strong>.</p>
+<hr />
+<h2 id="9">9. Что подтвердить перед закупкой (⚠️)</h2>
+<ol>
+<li><strong>Acconeer A121</strong> — точный диапазон, разрешение, потребление, масса,
+   доступ к сырым данным через SPI (для реакции ≤ 1 мс).</li>
+<li><strong>HLK-LD6002</strong> — реальная дальность (покрывает ли 10 м) и точность.</li>
+<li><strong>NRA24</strong> — точность (±0,1 м), масса, потребление, съём сырых данных.</li>
+<li><strong>TF-Luna</strong> — работает ли до 10 м (паспорт — 8 м).</li>
+<li><strong>Все</strong> — реальная частота обновления и время отклика (для требования ≤ 1 мс).</li>
+<li><strong>Hi-Link LD-серия (2410/2450/2461)</strong> — датчики присутствия, для высоты не применять.</li>
+</ol>
+</div></body></html>
