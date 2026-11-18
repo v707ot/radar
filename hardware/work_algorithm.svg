@@ -18,12 +18,12 @@
   <!-- INIT -->
   <rect x="430" y="85" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
   <text x="550" y="112" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">INIT</text>
-  <text x="550" y="130" font-size="11" text-anchor="middle" fill="#333">инициализация UART, CAN, таймеров</text>
+  <text x="550" y="130" font-size="11" text-anchor="middle" fill="#333">инициализация SPI, CAN, таймеров</text>
 
   <!-- SELF-TEST -->
   <rect x="430" y="175" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
   <text x="550" y="202" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">SELF-TEST</text>
-  <text x="550" y="220" font-size="11" text-anchor="middle" fill="#333">проверка датчика и связи</text>
+  <text x="550" y="220" font-size="11" text-anchor="middle" fill="#333">проверка 6× A121 (SPI) и связи</text>
 
   <!-- CONFIG -->
   <rect x="430" y="265" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
@@ -33,7 +33,7 @@
   <!-- MEASURE -->
   <rect x="430" y="355" width="240" height="56" rx="10" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
   <text x="550" y="382" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a5b2b">MEASURE</text>
-  <text x="550" y="400" font-size="11" text-anchor="middle" fill="#333">измерение + фильтр (медиана/Калман)</text>
+  <text x="550" y="400" font-size="11" text-anchor="middle" fill="#333">SPI-кадр A121 + фильтр (медиана/Калман)</text>
 
   <!-- DECISION -->
   <polygon points="550,445 700,500 550,555 400,500" fill="#fff8e1" stroke="#e0a800" stroke-width="2"/>

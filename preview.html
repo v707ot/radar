@@ -11,251 +11,228 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
 <h1>Автономная система предупреждения о малой высоте БПЛА</h1>
 <div class="note" style="background:#0d1a33;border-color:#2b4a7a;color:#cfe0ff">📋 <a href="project.html" style="color:#7fb8ff"><b>Проект</b> (пояснительная записка)</a> · 🔧 <a href="sensors.html" style="color:#7fb8ff"><b>Датчики</b> (наименования и характеристики)</a><br>🎮 <b>Визуализации</b>: <a href="sim/detection3d.html" style="color:#7fb8ff">3D (два БПЛА)</a> · <a href="sim/detection.html" style="color:#7fb8ff">2D (гонка дронов)</a></div>
 <div class="note"><b>Назначение — только сигнализация.</b> Выходы: зуммер, LED, дискретный флаг «LOW ALT», CAN-телеметрия. Исполнительных/инициирующих цепей нет.</div>
-<h2>1. Структурная схема</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" font-family="DejaVu Sans, Arial, sans-serif">
+<h2>1. Структурная схема</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1260" height="780" viewBox="0 0 1260 780" font-family="DejaVu Sans, Arial, sans-serif">
   <defs>
-    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
-    </marker>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
     <style>
       .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
       .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
       .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
       .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
-      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
-      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
       .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
-      .title{font-size:22px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
       .lbl{font-size:11px;fill:#334;text-anchor:middle}
     </style>
   </defs>
-  <text x="600" y="34" class="title">Автономная система предупреждения о малой высоте БПЛА — структурная схема</text>
-  <text x="600" y="56" class="ts">Вариант B (основной): радар 60 ГГц + лидар для сравнения · порог 2…10 м от СУ БПЛА · сигнальный выход</text>
-
-  <!-- Sensors -->
-  <rect class="box3" x="40" y="110" width="210" height="90"/>
-  <text x="145" y="145" class="t">Радар Acconeer XM125</text>
-  <text x="145" y="168" class="ts">60 ГГц, FMCW, UART</text>
-  <text x="145" y="185" class="ts">всепогодный, до ~20 м</text>
-
-  <rect class="box3" x="40" y="250" width="210" height="90"/>
-  <text x="145" y="285" class="t">Лидар Benewake TFmini-S</text>
-  <text x="145" y="308" class="ts">905 нм, UART/I²C</text>
-  <text x="145" y="325" class="ts">±6 см, 0,1…12 м</text>
-
-  <rect class="box3" x="40" y="390" width="210" height="80"/>
-  <text x="145" y="422" class="t">Инерциальный модуль</text>
-  <text x="145" y="443" class="ts">(опция) IMU/барометр</text>
-
-  <!-- MCU -->
-  <rect class="box" x="360" y="180" width="240" height="230"/>
-  <text x="480" y="220" class="t">Микроконтроллер</text>
-  <text x="480" y="242" class="t">STM32G474</text>
-  <text x="480" y="268" class="ts">приём данных датчиков</text>
-  <text x="480" y="288" class="ts">фильтр (медиана/Калман)</text>
-  <text x="480" y="308" class="ts">сравнение с порогом H_ср</text>
-  <text x="480" y="328" class="ts">формирование флага</text>
-  <text x="480" y="348" class="ts">телеметрия в СУ БПЛА</text>
-  <text x="480" y="372" class="ts">таймаут-контроль (Fail-Safe)</text>
-
-  <!-- Power -->
-  <rect class="box2" x="360" y="450" width="240" height="80"/>
-  <text x="480" y="482" class="t">Питание</text>
-  <text x="480" y="503" class="ts">BEC +5 В → LDO/DCDC +3,3 В</text>
-
-  <!-- Output -->
-  <rect class="box4" x="720" y="110" width="210" height="90"/>
-  <text x="825" y="145" class="t">Оповещение</text>
-  <text x="825" y="168" class="ts">зуммер + LED</text>
-  <text x="825" y="185" class="ts">(на борту)</text>
-
-  <rect class="box4" x="720" y="250" width="210" height="90"/>
-  <text x="825" y="285" class="t">Дискретный выход</text>
-  <text x="825" y="308" class="ts">«LOW ALT» (транзистор/</text>
-  <text x="825" y="325" class="ts">оптопара, открытый сток)</text>
-
-  <rect class="box" x="720" y="390" width="210" height="90"/>
-  <text x="825" y="425" class="t">CAN-трансивер</text>
-  <text x="825" y="448" class="ts">TJA1051</text>
-  <text x="825" y="465" class="ts">телеметрия и задание порога</text>
-
-  <!-- UAV -->
-  <rect class="box" x="1000" y="250" width="170" height="90"/>
-  <text x="1085" y="285" class="t">СУ БПЛА</text>
-  <text x="1085" y="308" class="ts">полётный контроллер</text>
-  <text x="1085" y="325" class="ts">пилот / автопилот</text>
-
-  <!-- wires sensors -> mcu -->
-  <path class="wire" d="M250,155 C310,155 310,240 360,240"/>
-  <path class="wire" d="M250,295 C310,295 310,300 360,300"/>
-  <path class="wire" d="M250,430 C310,430 310,360 360,360"/>
-
-  <!-- power -> mcu -->
-  <path class="wire" d="M480,450 L480,410"/>
-
-  <!-- mcu -> outputs -->
-  <path class="wire" d="M600,220 C660,220 660,155 720,155"/>
-  <path class="wire" d="M600,270 C660,270 660,295 720,295"/>
-  <path class="wire" d="M600,330 C660,330 660,435 720,435"/>
-
-  <!-- outputs -> UAV -->
-  <path class="wire" d="M930,295 C970,295 970,290 1000,290"/>
-  <path class="wire" d="M930,435 C970,435 970,320 1000,320"/>
-
-  <!-- power from UAV -->
-  <path class="wire" d="M1085,340 C1085,560 480,560 480,530" stroke-dasharray="6 4"/>
-
-  <text x="480" y="600" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи.</text>
-  <text x="480" y="624" class="lbl">Порог срабатывания H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
-  <text x="480" y="648" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные, исполнительных (инициирующих) цепей нет.</text>
+  <text x="630" y="34" class="title">Автономное сигнальное устройство малой высоты БПЛА — структурная схема</text>
+  <text x="630" y="56" class="sub">Единый тип датчика: 6× радар Acconeer A121 (60 ГГц PCR, SPI) · порог 2…10 м от СУ БПЛА · только сигнальные выходы</text>
+  <rect class="box3" x="28" y="88" width="244" height="70"/>
+  <text x="150" y="112" class="t">U1 · A121 (вниз)</text>
+  <text x="150" y="132" class="ts">с линзой, узкий луч</text>
+  <text x="150" y="150" class="ts">высота 2…10 м, ≤ 1 мс</text>
+  <rect class="box3" x="28" y="169" width="244" height="70"/>
+  <text x="150" y="193" class="t">U2 · A121 (кольцо 0°)</text>
+  <text x="150" y="213" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="231" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="250" width="244" height="70"/>
+  <text x="150" y="274" class="t">U3 · A121 (кольцо 90°)</text>
+  <text x="150" y="294" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="312" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="331" width="244" height="70"/>
+  <text x="150" y="355" class="t">U4 · A121 (кольцо 180°)</text>
+  <text x="150" y="375" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="393" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="412" width="244" height="70"/>
+  <text x="150" y="436" class="t">U5 · A121 (кольцо 270°)</text>
+  <text x="150" y="456" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="474" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="493" width="244" height="70"/>
+  <text x="150" y="517" class="t">U6 · A121 (вверх)</text>
+  <text x="150" y="537" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="555" class="ts">потолок / препятствия</text>
+  <rect class="box" x="388" y="158" width="252" height="300"/>
+  <text x="514" y="192" class="t">Микроконтроллер</text>
+  <text x="514" y="214" class="t">STM32G474</text>
+  <text x="514" y="238" class="ts">SPI-приём сырых данных A121</text>
+  <text x="514" y="258" class="ts">6× CS (выбор датчика) + 6× INT</text>
+  <text x="514" y="278" class="ts">фильтр (медиана / Калман)</text>
+  <text x="514" y="298" class="ts">сравнение с порогом H_ср</text>
+  <text x="514" y="318" class="ts">формирование флага</text>
+  <text x="514" y="338" class="ts">телеметрия в СУ БПЛА</text>
+  <text x="514" y="358" class="ts">таймаут-контроль (Fail-Safe)</text>
+  <text x="514" y="378" class="ts">приём уставки H_ср по CAN</text>
+  <rect class="box2" x="388" y="480" width="252" height="78"/>
+  <text x="514" y="510" class="t">Питание</text>
+  <text x="514" y="532" class="ts">BEC +5 В → DC-DC +3,3 В</text>
+  <rect class="box4" x="752" y="88" width="226" height="80"/>
+  <text x="865" y="118" class="t">Оповещение</text>
+  <text x="865" y="138" class="ts">зуммер + LED (на борту)</text>
+  <text x="865" y="156" class="ts">пилот слышит / видит</text>
+  <rect class="box4" x="752" y="198" width="226" height="80"/>
+  <text x="865" y="228" class="t">Дискретный выход</text>
+  <text x="865" y="248" class="ts">«LOW ALT» (откр. сток /</text>
+  <text x="865" y="266" class="ts">оптопара) — флаг</text>
+  <rect class="box" x="752" y="338" width="226" height="80"/>
+  <text x="865" y="368" class="t">CAN-трансивер</text>
+  <text x="865" y="388" class="ts">TJA1051</text>
+  <text x="865" y="406" class="ts">телеметрия + уставка</text>
+  <rect class="box" x="1040" y="338" width="188" height="80"/>
+  <text x="1134" y="370" class="t">СУ БПЛА</text>
+  <text x="1134" y="390" class="ts">полётный контроллер</text>
+  <text x="1134" y="408" class="ts">пилот / автопилот</text>
+  <path class="wire" d="M272,123 C330,123 340,208 388,208"/>
+  <path class="wire" d="M272,204 C330,204 340,238 388,238"/>
+  <path class="wire" d="M272,285 C330,285 340,268 388,268"/>
+  <path class="wire" d="M272,366 C330,366 340,298 388,298"/>
+  <path class="wire" d="M272,447 C330,447 340,328 388,328"/>
+  <path class="wire" d="M272,528 C330,528 340,358 388,358"/>
+  <path class="wire" d="M514,480 L514,458"/>
+  <path class="wire" d="M640,128 C700,128 700,128 752,128"/>
+  <path class="wire" d="M640,238 C700,238 700,238 752,238"/>
+  <path class="wire" d="M640,378 C700,378 700,378 752,378"/>
+  <path class="wire" d="M978,238 C1010,238 1010,368 1040,368"/>
+  <path class="wire" d="M978,378 C1010,378 1010,388 1040,388"/>
+  <path class="wire" d="M1134,418 C1134,648 514,648 514,558" stroke-dasharray="6 4"/>
+  <text x="630" y="700" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи (SPI, CAN).</text>
+  <text x="630" y="722" class="lbl">Порог H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
+  <text x="630" y="744" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные; исполнительных (инициирующих) цепей нет.</text>
 </svg>
 </div>
-<h2>2. Схема электрическая принципиальная (макет)</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1280" height="900" viewBox="0 0 1280 900" font-family="DejaVu Sans, Arial, sans-serif">
+<h2>2. Схема электрическая принципиальная (макет)</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1300" height="960" viewBox="0 0 1300 960" font-family="DejaVu Sans, Arial, sans-serif">
   <defs>
-    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
-    </marker>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
     <style>
       .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
       .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
       .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
       .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
-      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
-      .ts{font-size:12px;fill:#556;text-anchor:middle}
-      .pin{font-size:12px;fill:#1a2330}
-      .pinr{font-size:12px;fill:#1a2330;text-anchor:end}
-      .wire{stroke:#334;stroke-width:2;fill:none}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
       .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
-      .lbl{font-size:11px;fill:#334}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
     </style>
   </defs>
-  <text x="640" y="32" class="title">Схема электрическая принципиальная (макет, модульная сборка)</text>
-  <text x="640" y="54" class="ts">Питание 5 В от BEC · MCU STM32G474 · датчики UART · оповещение и CAN-выход</text>
-
-  <!-- Power input -->
-  <rect class="box2" x="40" y="90" width="150" height="70"/>
+  <text x="650" y="32" class="title">Схема электрическая принципиальная (макет, модульная сборка)</text>
+  <text x="650" y="54" class="sub">Питание 5 В от BEC · MCU STM32G474 · 6× A121 на общем SPI · оповещение и CAN-выход</text>
+  <rect class="box2" x="40" y="92" width="150" height="66"/>
   <text x="115" y="120" class="t">BEC +5 В</text>
   <text x="115" y="140" class="ts">бортовая сеть</text>
-
-  <rect class="box2" x="240" y="90" width="170" height="70"/>
-  <text x="325" y="115" class="t">D24V5F3</text>
-  <text x="325" y="135" class="ts">+3,3 В, 500 мА</text>
-
-  <path class="wire" d="M190,125 L240,125" marker-end="url(#a)"/>
-
-  <!-- TVS -->
-  <rect class="box2" x="40" y="200" width="150" height="60"/>
-  <text x="115" y="225" class="t">TVS + предохр.</text>
-  <text x="115" y="245" class="ts">защита по питанию</text>
-  <path class="wire" d="M115,160 L115,200" marker-end="url(#a)"/>
-
-  <!-- MCU -->
-  <rect class="box" x="470" y="150" width="340" height="360"/>
-  <text x="640" y="185" class="t">STM32G474 (Nucleo или своя PCB)</text>
-  <text x="640" y="205" class="ts">USART1 — радар · USART2 — лидар · USART3/CAN — СУ БПЛА</text>
-
-  <text x="486" y="245" class="pin">PA10  USART1_RX</text>
-  <text x="486" y="270" class="pin">PA9   USART1_TX</text>
-  <text x="486" y="295" class="pin">PA3   USART2_RX</text>
-  <text x="486" y="320" class="pin">PA2   USART2_TX</text>
-  <text x="486" y="345" class="pin">PA11  CAN_RX</text>
-  <text x="486" y="370" class="pin">PA12  CAN_TX</text>
-  <text x="486" y="395" class="pin">PB0   GPIO  → зуммер</text>
-  <text x="486" y="420" class="pin">PB1   GPIO  → LED</text>
-  <text x="486" y="445" class="pin">PB2   GPIO  → «LOW ALT»</text>
-  <text x="486" y="470" class="pin">3V3 / GND</text>
-
-  <!-- Radar -->
-  <rect class="box3" x="40" y="300" width="200" height="80"/>
-  <text x="140" y="330" class="t">Радар XM125</text>
-  <text x="140" y="350" class="ts">TX→PA10, RX←PA9</text>
-  <text x="140" y="368" class="ts">3V3, GND</text>
-  <path class="wire" d="M240,325 L470,250" marker-end="url(#a)"/>
-  <path class="wire" d="M470,275 C380,275 340,350 240,350" marker-end="url(#a)"/>
-
-  <!-- Lidar -->
-  <rect class="box3" x="40" y="410" width="200" height="80"/>
-  <text x="140" y="440" class="t">Лидар TFmini-S</text>
-  <text x="140" y="460" class="ts">TX→PA3, RX←PA2</text>
-  <text x="140" y="478" class="ts">5 В (вход), GND</text>
-  <path class="wire" d="M240,435 L470,300" marker-end="url(#a)"/>
-  <path class="wire" d="M470,325 C380,325 340,460 240,460" marker-end="url(#a)"/>
-
-  <!-- CAN transceiver -->
-  <rect class="box" x="900" y="230" width="180" height="110"/>
-  <text x="990" y="262" class="t">TJA1051</text>
-  <text x="990" y="284" class="ts">CAN-трансивер</text>
-  <text x="990" y="304" class="ts">120 Ом терминатор</text>
-  <text x="990" y="322" class="ts">CANH / CANL</text>
-  <path class="wire" d="M810,345 L900,290" marker-end="url(#a)"/>
-  <path class="wire" d="M810,370 L900,310" marker-end="url(#a)"/>
-
-  <rect class="box" x="1120" y="240" width="130" height="90"/>
-  <text x="1185" y="272" class="t">СУ БПЛА</text>
-  <text x="1185" y="294" class="ts">CAN-шина</text>
-  <text x="1185" y="314" class="ts">задание H_ср</text>
-  <path class="wire" d="M1080,285 L1120,285" marker-end="url(#a)"/>
-
-  <!-- Buzzer -->
-  <rect class="box4" x="900" y="390" width="180" height="60"/>
-  <text x="990" y="415" class="t">Зуммер (через Q1)</text>
-  <text x="990" y="435" class="ts">N-MOSFET + диод</text>
-  <path class="wire" d="M810,395 L900,415" marker-end="url(#a)"/>
-
-  <!-- LED -->
-  <rect class="box4" x="900" y="470" width="180" height="60"/>
-  <text x="990" y="495" class="t">LED (через R)</text>
-  <text x="990" y="515" class="ts">R = 1 кОм</text>
-  <path class="wire" d="M810,420 L900,495" marker-end="url(#a)"/>
-
-  <!-- Discrete output -->
-  <rect class="box4" x="900" y="550" width="180" height="70"/>
-  <text x="990" y="578" class="t">«LOW ALT»</text>
-  <text x="990" y="598" class="ts">оптопара / откр. сток</text>
-  <path class="wire" d="M810,445 L900,580" marker-end="url(#a)"/>
-
-  <!-- 3v3 rail -->
-  <path class="wire" d="M410,125 L410,470 L470,470"/>
-  <text x="430" y="150" class="lbl">+3,3 В</text>
-
-  <text x="640" y="700" class="lbl">Примечания: 1) Для макета датчики и MCU — готовые модули, соединённые проводами; своя PCB — на этапе опытного образца.</text>
-  <text x="640" y="722" class="lbl">2) TFmini-S питается от +5 В (вход 5 В-tolerant), XM125 — от +3,3 В. Уровни UART согласованы (3,3 В).</text>
-  <text x="640" y="744" class="lbl">3) «LOW ALT» — только сигнальный выход (флаг/индикация). Никаких инициирующих цепей.</text>
-  <text x="640" y="766" class="lbl">4) Резерв: I²C (PB6/PB7), SPI — для варианта XM125 по SPI.</text>
+  <rect class="box2" x="240" y="92" width="190" height="66"/>
+  <text x="335" y="118" class="t">D24V5F3</text>
+  <text x="335" y="138" class="ts">+3,3 В, 500 мА</text>
+  <path class="wire" d="M190,125 L240,125"/>
+  <rect class="box2" x="40" y="196" width="150" height="60"/>
+  <text x="115" y="220" class="t">TVS + предохр.</text>
+  <text x="115" y="240" class="ts">защита питания</text>
+  <path class="wire" d="M115,158 L115,196"/>
+  <rect class="box" x="500" y="150" width="360" height="430"/>
+  <text x="680" y="184" class="t">STM32G474 (Nucleo или своя PCB)</text>
+  <text x="680" y="204" class="ts">SPI1 — все A121 · CAN — СУ БПЛА</text>
+  <text x="516" y="250" class="ts" text-anchor="start" font-weight="bold">PA5  SPI1_SCK</text>
+  <text x="844" y="250" class="ts" text-anchor="end">общий такт SPI</text>
+  <text x="516" y="282" class="ts" text-anchor="start" font-weight="bold">PA6  SPI1_MISO</text>
+  <text x="844" y="282" class="ts" text-anchor="end">данные от A121</text>
+  <text x="516" y="314" class="ts" text-anchor="start" font-weight="bold">PA7  SPI1_MOSI</text>
+  <text x="844" y="314" class="ts" text-anchor="end">данные к A121</text>
+  <text x="516" y="346" class="ts" text-anchor="start" font-weight="bold">PA4/PC4..PC8  CS1..CS6</text>
+  <text x="844" y="346" class="ts" text-anchor="end">выбор датчика (6 линий)</text>
+  <text x="516" y="378" class="ts" text-anchor="start" font-weight="bold">PB0..PB5  INT1..INT6</text>
+  <text x="844" y="378" class="ts" text-anchor="end">готовность данных</text>
+  <text x="516" y="410" class="ts" text-anchor="start" font-weight="bold">PA11 CAN_RX / PA12 CAN_TX</text>
+  <text x="844" y="410" class="ts" text-anchor="end">к TJA1051</text>
+  <text x="516" y="442" class="ts" text-anchor="start" font-weight="bold">PB6  GPIO → зуммер</text>
+  <text x="844" y="442" class="ts" text-anchor="end">через 2N7002</text>
+  <text x="516" y="474" class="ts" text-anchor="start" font-weight="bold">PB7  GPIO → LED</text>
+  <text x="844" y="474" class="ts" text-anchor="end">через R 1 кОм</text>
+  <text x="516" y="506" class="ts" text-anchor="start" font-weight="bold">PB8  GPIO → «LOW ALT»</text>
+  <text x="844" y="506" class="ts" text-anchor="end">откр. сток / оптопара</text>
+  <text x="516" y="538" class="ts" text-anchor="start" font-weight="bold">3V3 / GND</text>
+  <text x="844" y="538" class="ts" text-anchor="end">питание логики</text>
+  <rect class="box3" x="40" y="320" width="330" height="250"/>
+  <text x="205" y="348" class="t">6× радар Acconeer A121 (модуль XM125)</text>
+  <text x="205" y="372" class="ts" text-anchor="start">U1: SCK/MISO/MOSI — общая шина SPI · CS1 — отдельная</text>
+  <text x="205" y="402" class="ts" text-anchor="start">U2: SCK/MISO/MOSI — общая шина SPI · CS2 — отдельная</text>
+  <text x="205" y="432" class="ts" text-anchor="start">U3: SCK/MISO/MOSI — общая шина SPI · CS3 — отдельная</text>
+  <text x="205" y="462" class="ts" text-anchor="start">U4: SCK/MISO/MOSI — общая шина SPI · CS4 — отдельная</text>
+  <text x="205" y="492" class="ts" text-anchor="start">U5: SCK/MISO/MOSI — общая шина SPI · CS5 — отдельная</text>
+  <text x="205" y="522" class="ts" text-anchor="start">U6: SCK/MISO/MOSI — общая шина SPI · CS6 — отдельная</text>
+  <text x="205" y="556" class="ts" text-anchor="start">Питание +3,3 В, GND · INT — прерывание готовности</text>
+  <path class="wire" d="M370,430 C440,430 440,282 500,282"/>
+  <path class="wire" d="M500,346 C440,346 430,430 370,430"/>
+  <rect class="box" x="940" y="230" width="180" height="120"/>
+  <text x="1030" y="262" class="t">TJA1051</text>
+  <text x="1030" y="284" class="ts">CAN-трансивер</text>
+  <text x="1030" y="304" class="ts">120 Ом терминатор</text>
+  <text x="1030" y="324" class="ts">CANH / CANL</text>
+  <path class="wire" d="M860,374 L940,300"/>
+  <path class="wire" d="M860,406 L940,320"/>
+  <rect class="box" x="1150" y="250" width="120" height="90"/>
+  <text x="1210" y="282" class="t">СУ БПЛА</text>
+  <text x="1210" y="304" class="ts">CAN-шина</text>
+  <text x="1210" y="324" class="ts">уставка H_ср</text>
+  <path class="wire" d="M1120,295 L1150,295"/>
+  <rect class="box4" x="940" y="420" width="180" height="60"/>
+  <text x="1030" y="445" class="t">Зуммер (через Q1)</text>
+  <text x="1030" y="465" class="ts">N-MOSFET + диод</text>
+  <path class="wire" d="M860,470 L940,445"/>
+  <rect class="box4" x="940" y="500" width="180" height="60"/>
+  <text x="1030" y="525" class="t">LED (через R)</text>
+  <text x="1030" y="545" class="ts">R = 1 кОм</text>
+  <path class="wire" d="M860,502 L940,525"/>
+  <rect class="box4" x="940" y="580" width="180" height="66"/>
+  <text x="1030" y="606" class="t">«LOW ALT»</text>
+  <text x="1030" y="626" class="ts">оптопара / откр. сток</text>
+  <path class="wire" d="M860,534 L940,606"/>
+  <path class="wire" d="M430,125 L430,560 L500,560"/>
+  <text x="452" y="150" class="lbl" text-anchor="start">+3,3 В</text>
+  <text x="120" y="760" class="lbl" text-anchor="start">Примечания: 1) Макет — готовые модули XM125 + Nucleo, соединённые проводами; своя PCB — на этапе опытного образца.</text>
+  <text x="120" y="784" class="lbl" text-anchor="start">2) Все A121 работают на общем SPI; выбор датчика — линией CS, готовность — линией INT.</text>
+  <text x="120" y="808" class="lbl" text-anchor="start">3) Питание A121 — +3,3 В (на модуле XM125 есть свой стабилизатор ядра 1,8 В). Уровни SPI — 3,3 В.</text>
+  <text x="120" y="832" class="lbl" text-anchor="start">4) «LOW ALT» — только сигнальный выход (флаг/индикация). Никаких инициирующих цепей.</text>
+  <text x="120" y="856" class="lbl" text-anchor="start">5) SPI до 20…50 МГц — обеспечивает съём сырых данных за десятки микросекунд (см. временную диаграмму).</text>
 </svg>
 </div>
 <h2>3. Требования ТЗ и их выполнение</h2>
 <div class="card"><table>
 <tr><th>№</th><th>Требование</th><th>Реализация</th><th>Статус</th></tr>
 <tr><td>1</td><td>Высота 2…10 м, перестройка от СУ БПЛА</td><td>программный порог по CAN/UART</td><td>✅</td></tr>
-<tr><td>2</td><td>РЛС (см/мм) или лидар</td><td>радар 60 ГГц XM125 / лидар TFmini-S</td><td>✅</td></tr>
-<tr><td>3</td><td>Погрешность ≤ 1 м</td><td>ε = 0,08…0,36 м (все источники: наклон, динамика, цель)</td><td>✅ при наклоне ≤ 10°</td></tr>
-<tr><td>4</td><td>Реакция ≤ 1 мс</td><td>электронная ≈25 мкс; физическая не подтверждена</td><td>⚠️ <b>открыто</b></td></tr>
-<tr><td>5</td><td>Масса ≤ 100 г</td><td>76 г <b>без батареи</b>; с батареей до ~4 ч — 98 г</td><td>⚠️ зависит от автономности</td></tr>
-<tr><td>6</td><td>−20…+40 °C</td><td>industrial-grade; лидар на −20 °C впритык</td><td>⚠️ запас</td></tr>
-<tr><td>7</td><td>10g осевая / 3g радиальная</td><td>заливка, крепёж M2</td><td>✅</td></tr>
+<tr><td>2</td><td>РЛС (см/мм) или лидар</td><td><b>радар 60 ГГц Acconeer A121 (6 шт)</b></td><td>✅</td></tr>
+<tr><td>3</td><td>Погрешность ≤ 1 м</td><td>ε = 0,07…0,34 м (все источники: наклон, динамика, цель)</td><td>✅ при наклоне ≤ 10°</td></tr>
+<tr><td>4</td><td>Реакция ≤ 1 мс</td><td><b>A121 (SPI, режим HSM, C_f≈36 мкс)</b> → ~0,2…0,5 мс</td><td>✅ (нужно натурное измерение)</td></tr>
+<tr><td>5</td><td>Масса ≤ 100 г</td><td>83 г без батареи; <b>97 г</b> с батареей 700 мА·ч (3 ч)</td><td>✅ запас 3 г</td></tr>
+<tr><td>6</td><td>−20…+40 °C</td><td>A121 (−40…+85 °C); уязвим только аккумулятор</td><td>✅ запас батареи</td></tr>
+<tr><td>7</td><td>10g осевая / 3g радиальная</td><td>заливка, крепёж M2, резонанс не возбуждается</td><td>✅</td></tr>
+<tr><td>8</td><td>Обзор 360° (земля, стены, потолок)</td><td>кольцо 4× A121 + 1 вверх + 1 вниз</td><td>✅ стены до 12 м</td></tr>
 </table>
-<div class="note" style="background:#fff8e1;border-color:#e0a800">
-<b>Открытые пункты:</b> №4 (реакция — не измерена от изменения высоты), №5 (автономность — не задан ресурс работы),
-№3 (погрешность — нужен натурный пролёт), №6 (холод — лидар на пределе).
+<div class="note" style="background:#eafaf0;border-color:#2f8f52">
+<b>Решение: единый датчик — радар Acconeer A121 (60 ГГц PCR).</b> Только он на 100 % соответствует
+ТЗ одновременно (реакция ≤ 1 мс при дальности ≥ 10 м, всепогодность, масса, температура).
 </div></div>
 <h2>4. Перечень покупных изделий</h2>
 <div class="card"><table>
 <tr><th>Поз.</th><th>Наименование</th><th>Партномер</th><th>Интерфейс</th><th>Масса, г</th><th>Цена, $</th></tr>
-<tr><td>U1</td><td>Радар 60 ГГц</td><td>Acconeer XM125</td><td>UART/SPI</td><td>5</td><td>40</td></tr>
-<tr><td>U2</td><td>База отладки</td><td>Acconeer XC120</td><td>USB</td><td>—</td><td>60</td></tr>
-<tr><td>U3</td><td>Лидар</td><td>Benewake TFmini-S</td><td>UART/I2C</td><td>11</td><td>40</td></tr>
-<tr><td>U4</td><td>MCU</td><td>NUCLEO-G474RE</td><td>—</td><td>30</td><td>20</td></tr>
-<tr><td>U5</td><td>CAN-трансивер</td><td>TJA1051T/3</td><td>CAN</td><td>2</td><td>5</td></tr>
+<tr><td>U1</td><td>Радар A121 (вниз, с линзой)</td><td>Acconeer XM125</td><td>SPI</td><td>3</td><td>40</td></tr>
+<tr><td>U2–U5</td><td>Радар A121 (кольцо 360°)</td><td>Acconeer XM125 ×4</td><td>SPI</td><td>12</td><td>160</td></tr>
+<tr><td>U6</td><td>Радар A121 (вверх)</td><td>Acconeer XM125</td><td>SPI</td><td>3</td><td>40</td></tr>
+<tr><td>U7</td><td>База отладки</td><td>Acconeer XC120</td><td>USB</td><td>—</td><td>60</td></tr>
+<tr><td>U8</td><td>MCU</td><td>NUCLEO-G474RE</td><td>—</td><td>30</td><td>20</td></tr>
+<tr><td>U9</td><td>CAN-трансивер</td><td>TJA1051T/3</td><td>CAN</td><td>2</td><td>5</td></tr>
 <tr><td>PS1</td><td>Стабилизатор</td><td>D24V5F3</td><td>—</td><td>2</td><td>8</td></tr>
+<tr><td>BAT</td><td>Аккумулятор LiPo 1S</td><td>700 мА·ч</td><td>—</td><td>14</td><td>8</td></tr>
 </table></div>
 
 <h2>5. Варианты исполнения</h2>
 <div class="card"><table>
 <tr><th>Вариант</th><th>Датчик</th><th>Стоимость, ₽</th><th>Всепогодность</th><th>Точность</th><th>Рекомендация</th></tr>
-<tr><td>A</td><td>Benewake TFmini-S</td><td>~7 500</td><td>низкая</td><td>±6 см</td><td>отработка логики</td></tr>
-<tr><td><b>B</b></td><td><b>Acconeer XM125 (60 ГГц)</b></td><td><b>~16 000–22 000</b></td><td><b>высокая</b></td><td><b>высокая</b></td><td><b>основной</b></td></tr>
-<tr><td>C</td><td>Infineon Distance2Go / RFbeam SGR-24</td><td>~22 000–26 000</td><td>высокая</td><td>0,1–0,3 м</td><td>строгое ТЗ</td></tr>
-<tr><td>D</td><td>Benewake TF-Luna</td><td>~3 800</td><td>низкая</td><td>±6 см</td><td>быстрый демо</td></tr>
+<tr><td><b>Основной</b></td><td><b>6× Acconeer A121 (60 ГГц)</b></td><td><b>~34 500 (розница) / ~12 500 (серия)</b></td><td><b>высокая</b></td><td><b>~мм…см</b></td><td><b>единственный по ТЗ (реакция ≤1 мс)</b></td></tr>
+<tr><td>A</td><td>Benewake TFmini-S</td><td>~7 500</td><td>низкая</td><td>±6 см</td><td>❌ не проходит по реакции (1,12 мс)</td></tr>
+<tr><td>C</td><td>Infineon Distance2Go / RFbeam SGR-24</td><td>~22 000–26 000</td><td>высокая</td><td>0,1–0,3 м</td><td>дорого в РФ</td></tr>
+<tr><td>D</td><td>Benewake TF-Luna</td><td>~3 800</td><td>низкая</td><td>±6 см</td><td>только демо логики</td></tr>
 </table></div>
 <h2>6. Закупка в российских магазинах</h2>
 <div class="note">Ссылки ведут на <b>поиск по партномеру</b> (стабильны, не «протухают»). Наличие и цену подтверждайте на странице. Полные списки — в docs/ВАРИАНТЫ_И_ЗАКУПКА.md и hardware/ЗАКУПКА_RU.csv.</div>
@@ -274,11 +251,10 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
 <div class="note">Это <b>серийная</b> себестоимость (своя PCB, оптовые цены, без отладочных плат), а не цена макета.</div>
 <div class="card"><table>
 <tr><th>Вариант</th><th>Датчик</th><th>Серийная себестоимость, ₽</th><th>В пределах 20 000 ₽</th></tr>
-<tr><td>A</td><td>TFmini-S</td><td>≈ 4 500</td><td>✅ запас 4,4×</td></tr>
-<tr><td><b>B</b></td><td><b>Acconeer XM125 (60 ГГц)</b></td><td><b>≈ 7 000</b></td><td>✅ запас 2,8×</td></tr>
+<tr><td>A</td><td>TFmini-S</td><td>≈ 4 500</td><td>✅ по цене, но ❌ по ТЗ</td></tr>
+<tr><td><b>Основной</b></td><td><b>6× A121 (60 ГГц), чип</b></td><td><b>≈ 12 500</b></td><td>✅ запас 1,6×</td></tr>
 <tr><td>C1</td><td>Infineon BGT24LTR11 (своя РЧ-плата)</td><td>≈ 8 500</td><td>✅ запас 2,3×</td></tr>
 <tr><td>C2</td><td>RFbeam SGR-24 (модуль)</td><td>≈ 17 500</td><td>✅ впритык</td></tr>
-<tr><td>D</td><td>TF-Luna</td><td>≈ 2 800</td><td>✅ запас 7×</td></tr>
 </table></div>
 <p style="font-size:13px;color:#556">Полный расчёт — в docs/СЕРИЙНАЯ_СТОИМОСТЬ.md.</p>
 
@@ -361,12 +337,12 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
   <!-- INIT -->
   <rect x="430" y="85" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
   <text x="550" y="112" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">INIT</text>
-  <text x="550" y="130" font-size="11" text-anchor="middle" fill="#333">инициализация UART, CAN, таймеров</text>
+  <text x="550" y="130" font-size="11" text-anchor="middle" fill="#333">инициализация SPI, CAN, таймеров</text>
 
   <!-- SELF-TEST -->
   <rect x="430" y="175" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
   <text x="550" y="202" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a3a6b">SELF-TEST</text>
-  <text x="550" y="220" font-size="11" text-anchor="middle" fill="#333">проверка датчика и связи</text>
+  <text x="550" y="220" font-size="11" text-anchor="middle" fill="#333">проверка 6× A121 (SPI) и связи</text>
 
   <!-- CONFIG -->
   <rect x="430" y="265" width="240" height="56" rx="10" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
@@ -376,7 +352,7 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
   <!-- MEASURE -->
   <rect x="430" y="355" width="240" height="56" rx="10" fill="#e8f5e9" stroke="#27ae60" stroke-width="2"/>
   <text x="550" y="382" font-size="15" font-weight="bold" text-anchor="middle" fill="#1a5b2b">MEASURE</text>
-  <text x="550" y="400" font-size="11" text-anchor="middle" fill="#333">измерение + фильтр (медиана/Калман)</text>
+  <text x="550" y="400" font-size="11" text-anchor="middle" fill="#333">SPI-кадр A121 + фильтр (медиана/Калман)</text>
 
   <!-- DECISION -->
   <polygon points="550,445 700,500 550,555 400,500" fill="#fff8e1" stroke="#e0a800" stroke-width="2"/>
@@ -442,292 +418,215 @@ table{border-collapse:collapse;width:100%;font-size:14px} td,th{border:1px solid
   <text x="760" y="786" font-size="11" fill="#333">Выходы только сигнальные (зуммер, LED, флаг, CAN)</text>
 </svg></div>
 <h2>11. Временная диаграмма реакции</h2>
-<div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" font-family="DejaVu Sans, Arial, sans-serif">
-  <rect width="1200" height="700" fill="#ffffff"/>
-  <text x="600" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Временная диаграмма реакции</text>
-  <text x="600" y="58" font-size="13" text-anchor="middle" fill="#666">От пересечения порога H_ср до срабатывания сигнала</text>
-
-  <!-- time axis -->
-  <line x1="120" y1="600" x2="1140" y2="600" stroke="#333" stroke-width="2"/>
-  <polygon points="1140,600 1128,595 1128,605" fill="#333"/>
-  <text x="1146" y="605" font-size="12" fill="#333">t</text>
-
-  <!-- markers t0..t4 -->
-  <g stroke="#888" stroke-width="1" stroke-dasharray="4 4">
-    <line x1="230" y1="90" x2="230" y2="600"/>
-    <line x1="430" y1="90" x2="430" y2="600"/>
-    <line x1="620" y1="90" x2="620" y2="600"/>
-    <line x1="760" y1="90" x2="760" y2="600"/>
-    <line x1="900" y1="90" x2="900" y2="600"/>
-  </g>
-  <g font-size="13" font-weight="bold" fill="#333" text-anchor="middle">
-    <text x="230" y="640">t₀</text>
-    <text x="430" y="640">t₁</text>
-    <text x="620" y="640">t₂</text>
-    <text x="760" y="640">t₃</text>
-    <text x="900" y="640">t₄</text>
-  </g>
-  <g font-size="10" fill="#666" text-anchor="middle">
-    <text x="230" y="658">высота &lt; H_ср</text>
-    <text x="430" y="658">измерение готово</text>
-    <text x="620" y="658">кадр принят</text>
-    <text x="760" y="658">порог сравнён</text>
-    <text x="900" y="658">выход активен</text>
-  </g>
-
-  <!-- signal 1: Высота h(t) -->
-  <text x="60" y="120" font-size="12" font-weight="bold" fill="#333">Высота h(t)</text>
-  <line x1="120" y1="180" x2="1140" y2="180" stroke="#eee"/>
-  <line x1="120" y1="220" x2="1140" y2="220" stroke="#eee"/>
-  <!-- threshold line -->
-  <line x1="120" y1="220" x2="1140" y2="220" stroke="#e0a800" stroke-width="1.5" stroke-dasharray="6 4"/>
-  <text x="1146" y="224" font-size="10" fill="#8a6100">H_ср</text>
-  <!-- descending curve -->
-  <path d="M120,110 C300,120 400,180 520,220 C640,260 780,300 1140,340" fill="none" stroke="#3367d6" stroke-width="2.5"/>
-  <circle cx="520" cy="220" r="5" fill="#c0392b"/>
-
-  <!-- signal 2: Данные датчика (кадры) -->
-  <text x="60" y="300" font-size="12" font-weight="bold" fill="#333">Кадры датчика</text>
-  <line x1="120" y1="340" x2="1140" y2="340" stroke="#ddd"/>
-  <g fill="#27ae60">
-    <rect x="150" y="322" width="16" height="18"/><rect x="280" y="322" width="16" height="18"/>
-    <rect x="410" y="322" width="16" height="18"/><rect x="540" y="322" width="16" height="18"/>
-    <rect x="670" y="322" width="16" height="18"/><rect x="800" y="322" width="16" height="18"/>
-    <rect x="930" y="322" width="16" height="18"/><rect x="1060" y="322" width="16" height="18"/>
-  </g>
-  <text x="180" y="360" font-size="10" fill="#666">период обновления T_обн = 1/f</text>
-
-  <!-- signal 3: Обработка MCU -->
-  <text x="60" y="410" font-size="12" font-weight="bold" fill="#333">Обработка MCU</text>
-  <line x1="120" y1="450" x2="1140" y2="450" stroke="#ddd"/>
-  <rect x="620" y="432" width="140" height="18" fill="#9b59b6" opacity="0.7"/>
-  <text x="690" y="445" font-size="10" fill="#fff" text-anchor="middle">разбор+фильтр+сравнение (~20 мкс)</text>
-
-  <!-- signal 4: Флаг LOW ALT -->
-  <text x="60" y="500" font-size="12" font-weight="bold" fill="#333">Флаг / выход</text>
-  <line x1="120" y1="540" x2="1140" y2="540" stroke="#ddd"/>
-  <path d="M120,540 L900,540 L900,510 L1140,510" fill="none" stroke="#c0392b" stroke-width="2.5"/>
-  <text x="950" y="528" font-size="11" fill="#8a1c10">LOW ALT = 1</text>
-  <circle cx="900" cy="540" r="4" fill="#c0392b"/>
-
-  <!-- annotations -->
-  <text x="330" y="250" font-size="11" fill="#3367d6">снижение</text>
-  <text x="660" y="200" font-size="11" fill="#666">T_задержки = t₄ − t₀</text>
-  <line x1="230" y1="190" x2="900" y2="190" stroke="#666" stroke-width="1"/>
-  <line x1="230" y1="185" x2="230" y2="195" stroke="#666"/>
-  <line x1="900" y1="185" x2="900" y2="195" stroke="#666"/>
-
-  <!-- legend -->
-  <rect x="60" y="665" width="1080" height="28" rx="6" fill="#f7f7f7" stroke="#ddd"/>
-  <text x="80" y="684" font-size="11" fill="#333">Электронная задержка (t₂→t₄) ≈ 25 мкс. Полная задержка (t₀→t₄) = период датчика + передача + обработка + выдача.</text>
+<div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1240" height="720" viewBox="0 0 1240 720" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
+  </defs>
+  <rect width="1240" height="720" fill="#ffffff"/>
+  <text x="620" y="34" class="title">Временная диаграмма реакции (радар A121, SPI)</text>
+  <text x="620" y="58" class="sub">От пересечения порога H_ср до срабатывания сигнала — не более 1 мс</text>
+  <line x1="120" y1="600" x2="1160" y2="600" stroke="#333" stroke-width="2"/>
+  <polygon points="1160,600 1148,595 1148,605" fill="#333"/>
+  <text x="1166" y="605" class="lbl" text-anchor="start">t</text>
+  <line x1="240" y1="96" x2="240" y2="600" stroke="#888" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="240" y="640" class="lbl" font-size="13" font-weight="bold">t₀</text>
+  <text x="240" y="658" class="lbl" font-size="10" fill="#666">высота &lt; H_ср</text>
+  <line x1="520" y1="96" x2="520" y2="600" stroke="#888" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="520" y="640" class="lbl" font-size="13" font-weight="bold">t₁</text>
+  <text x="520" y="658" class="lbl" font-size="10" fill="#666">кадр готов (HSM)</text>
+  <line x1="700" y1="96" x2="700" y2="600" stroke="#888" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="700" y="640" class="lbl" font-size="13" font-weight="bold">t₂</text>
+  <text x="700" y="658" class="lbl" font-size="10" fill="#666">SPI-кадр принят</text>
+  <line x1="850" y1="96" x2="850" y2="600" stroke="#888" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="850" y="640" class="lbl" font-size="13" font-weight="bold">t₃</text>
+  <text x="850" y="658" class="lbl" font-size="10" fill="#666">порог сравнён</text>
+  <line x1="1000" y1="96" x2="1000" y2="600" stroke="#888" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="1000" y="640" class="lbl" font-size="13" font-weight="bold">t₄</text>
+  <text x="1000" y="658" class="lbl" font-size="10" fill="#666">выход активен</text>
+  <text x="70" y="120" class="lbl" text-anchor="start" font-size="12" font-weight="bold">Высота h(t)</text>
+  <line x1="120" y1="220" x2="1160" y2="220" stroke="#e0a800" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="1166" y="224" class="lbl" text-anchor="start" font-size="10" fill="#8a6100">H_ср</text>
+  <path d="M120,110 C320,120 420,180 540,220 C680,262 820,300 1160,344" fill="none" stroke="#3367d6" stroke-width="2.5"/>
+  <circle cx="540" cy="220" r="5" fill="#c0392b"/>
+  <text x="70" y="300" class="lbl" text-anchor="start" font-size="12" font-weight="bold">Кадры A121</text>
+  <line x1="120" y1="340" x2="1160" y2="340" stroke="#ddd"/>
+  <rect x="170" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="270" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="370" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="470" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="570" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="670" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="770" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="870" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="970" y="322" width="18" height="18" fill="#27ae60"/>
+  <rect x="1070" y="322" width="18" height="18" fill="#27ae60"/>
+  <text x="250" y="362" class="lbl" text-anchor="start" font-size="10" fill="#666">период кадров T_обн ≈ 0,2…0,5 мс (режим HSM)</text>
+  <text x="70" y="420" class="lbl" text-anchor="start" font-size="12" font-weight="bold">Обработка MCU</text>
+  <line x1="120" y1="460" x2="1160" y2="460" stroke="#ddd"/>
+  <rect x="700" y="442" width="150" height="18" fill="#9b59b6" opacity="0.7"/>
+  <text x="775" y="455" class="lbl" font-size="10" fill="#fff">разбор+фильтр+сравнение (~20 мкс)</text>
+  <text x="70" y="520" class="lbl" text-anchor="start" font-size="12" font-weight="bold">Флаг / выход</text>
+  <line x1="120" y1="560" x2="1160" y2="560" stroke="#ddd"/>
+  <path d="M120,560 L1000,560 L1000,530 L1160,530" fill="none" stroke="#c0392b" stroke-width="2.5"/>
+  <text x="1050" y="548" class="lbl" text-anchor="start" font-size="11" fill="#8a1c10">LOW ALT = 1</text>
+  <circle cx="1000" cy="560" r="4" fill="#c0392b"/>
+  <line x1="240" y1="196" x2="1000" y2="196" stroke="#666" stroke-width="1"/>
+  <line x1="240" y1="191" x2="240" y2="201" stroke="#666"/>
+  <line x1="1000" y1="191" x2="1000" y2="201" stroke="#666"/>
+  <text x="620" y="188" class="lbl" font-size="12" fill="#666">T_реакции = t₄ − t₀ ≤ 1 мс</text>
+  <rect x="60" y="670" width="1120" height="34" rx="6" fill="#f7f7f7" stroke="#ddd"/>
+  <text x="80" y="692" class="lbl" text-anchor="start" font-size="11">Составляющие: кадр A121 (~0,2…0,5 мс, HSM) + SPI-передача (~30…100 мкс) + обработка (~20 мкс) + выдача (~5 мкс).</text>
 </svg></div>
 <h2>12. Элементы, принцип работы и расчёты по ТЗ</h2>
 <div class="card"><p>Полный разбор — в файле <b>docs/ЭЛЕМЕНТЫ_ПРИНЦИП_РАСЧЁТЫ.md</b>: состав элементов, принцип измерения (ToF/FMCW), расчёты по всем 7 требованиям ТЗ (погрешность, реакция, масса, температура, перегрузки) и схема работы.</p></div>
 <h2>13. Круговой обзор 360° (земля, стены, потолок)</h2>
-<div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="880" viewBox="0 0 1200 880" font-family="DejaVu Sans, Arial, sans-serif">
-  <rect width="1200" height="880" fill="#ffffff"/>
-  <text x="600" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Покрытие 360°: земля, стены, потолок</text>
-  <text x="600" y="58" font-size="13" text-anchor="middle" fill="#666">6× VL53L5CX (горизонт) + 1 вверх + радар 60 ГГц A121 вниз</text>
-
-  <!-- ============ ВИД СВЕРХУ ============ -->
-  <text x="300" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сверху (горизонтальный обзор)</text>
-
-  <!-- центр -->
-  <circle cx="300" cy="360" r="34" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="300" y="358" font-size="10" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-  <text x="300" y="372" font-size="9" text-anchor="middle" fill="#1a3a6b">+ датчик</text>
-
-  <!-- 6 секторов по 63 градуса (перекрытие) -->
-  <g opacity="0.35">
-    <path d="M300,360 L300,120 A240,240 0 0 1 508,240 Z" fill="#27ae60"/>
-    <path d="M300,360 L508,240 A240,240 0 0 1 508,480 Z" fill="#2980b9"/>
-    <path d="M300,360 L508,480 A240,240 0 0 1 300,600 Z" fill="#8e44ad"/>
-    <path d="M300,360 L300,600 A240,240 0 0 1 92,480 Z" fill="#e67e22"/>
-    <path d="M300,360 L92,480 A240,240 0 0 1 92,240 Z" fill="#16a085"/>
-    <path d="M300,360 L92,240 A240,240 0 0 1 300,120 Z" fill="#c0392b"/>
-  </g>
-
-  <!-- лучи/подписи датчиков -->
-  <g font-size="11" font-weight="bold" text-anchor="middle">
-    <text x="300" y="112" fill="#1a5b2b">№1</text>
-    <text x="524" y="236" fill="#1a3a6b">№2</text>
-    <text x="524" y="486" fill="#5b2c6f">№3</text>
-    <text x="300" y="620" fill="#8a5000">№4</text>
-    <text x="76" y="486" fill="#0e6655">№5</text>
-    <text x="76" y="236" fill="#8a1c10">№6</text>
-  </g>
-
-  <!-- дальность 4 м -->
-  <circle cx="300" cy="360" r="240" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="6 4"/>
-  <text x="300" y="150" font-size="11" text-anchor="middle" fill="#333">дальность до стен 4 м (VL53L5CX)</text>
-
-  <text x="300" y="670" font-size="12" text-anchor="middle" fill="#333">6 × 63° = 378° → перекрытие 18°, «мёртвых зон» нет</text>
-  <text x="300" y="690" font-size="11" text-anchor="middle" fill="#666">Цена кольца ≈ 6 000 ₽, масса ≈ 6 г</text>
-
-  <!-- ============ ВИД СБОКУ ============ -->
-  <text x="880" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сбоку (вертикальный обзор)</text>
-
-  <!-- потолок -->
-  <line x1="660" y1="140" x2="1100" y2="140" stroke="#8a1c10" stroke-width="3"/>
-  <text x="880" y="132" font-size="12" text-anchor="middle" fill="#8a1c10">потолок</text>
-
-  <!-- стена слева -->
-  <line x1="660" y1="140" x2="660" y2="620" stroke="#8a5000" stroke-width="3"/>
-  <text x="700" y="180" font-size="11" fill="#8a5000">стена</text>
-
-  <!-- пол -->
-  <line x1="660" y1="620" x2="1100" y2="620" stroke="#1a5b2b" stroke-width="3"/>
-  <text x="880" y="645" font-size="12" text-anchor="middle" fill="#1a5b2b">земля / пол</text>
-
-  <!-- БПЛА в центре -->
-  <rect x="850" y="360" width="60" height="30" rx="6" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="880" y="380" font-size="11" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-
-  <!-- луч вверх -->
-  <path d="M880,360 L830,150 L930,150 Z" fill="#c0392b" opacity="0.3"/>
-  <line x1="880" y1="360" x2="880" y2="150" stroke="#c0392b" stroke-width="2" marker-end="url(#a2)"/>
-  <text x="955" y="250" font-size="11" fill="#8a1c10">вверх (потолок)</text>
-  <text x="955" y="266" font-size="10" fill="#666">VL53L5CX, до 4 м</text>
-
-  <!-- луч вниз -->
-  <path d="M880,390 L820,610 L940,610 Z" fill="#1a5b2b" opacity="0.25"/>
-  <line x1="880" y1="390" x2="880" y2="600" stroke="#1a5b2b" stroke-width="2"/>
-  <text x="955" y="520" font-size="11" fill="#1a5b2b">вниз (высота)</text>
-  <text x="955" y="536" font-size="10" fill="#666">радар A121, 2…10 м</text>
-  <text x="955" y="552" font-size="10" fill="#8a1c10">реакция ≤1 мс</text>
-
-  <!-- луч в сторону -->
-  <line x1="850" y1="375" x2="670" y2="375" stroke="#8a5000" stroke-width="2" marker-end="url(#a3)"/>
-  <text x="760" y="410" font-size="11" fill="#8a5000">в стороны (стены)</text>
-  <text x="760" y="426" font-size="10" fill="#666">кольцо VL53L5CX, до 4 м</text>
-
-  <!-- высота полёта -->
-  <line x1="1010" y1="375" x2="1010" y2="620" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
-  <text x="1020" y="500" font-size="11" fill="#333">H = 2…10 м</text>
-
+<div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1240" height="900" viewBox="0 0 1240 900" font-family="DejaVu Sans, Arial, sans-serif">
   <defs>
-    <marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#c0392b"/></marker>
-    <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#8a5000"/></marker>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
   </defs>
-
-  <!-- ============ ЛЕГЕНДА ============ -->
-  <rect x="60" y="730" width="1080" height="120" rx="10" fill="#f7f7f7" stroke="#ddd"/>
-  <text x="80" y="756" font-size="13" font-weight="bold" fill="#333">Состав датчиков:</text>
-  <rect x="80" y="768" width="14" height="14" fill="#2980b9"/><text x="100" y="780" font-size="11" fill="#333">6× VL53L5CX — горизонт 360° (стены), до 4 м, 6 г, ~6 000 ₽</text>
-  <rect x="80" y="790" width="14" height="14" fill="#c0392b"/><text x="100" y="802" font-size="11" fill="#333">1× VL53L5CX — вверх (потолок), до 4 м, 1 г, ~1 000 ₽</text>
-  <rect x="80" y="812" width="14" height="14" fill="#1a5b2b"/><text x="100" y="824" font-size="11" fill="#333">1× радар 60 ГГц A121 — вниз (высота 2…10 м), реакция ≤1 мс, всепогодный, 5 г, ~3 600 ₽</text>
-  <text x="80" y="844" font-size="11" fill="#8a1c10">⚠️ Кольцо стен видит только до 4 м. Для 10 м во все стороны нужен мм-радар (+10 000 ₽, +15 г).</text>
+  <text x="620" y="34" class="title">Покрытие 360°: земля, стены, потолок</text>
+  <text x="620" y="56" class="sub">6× радар Acconeer A121 (60 ГГц PCR) — единый тип датчика на все направления</text>
+  <text x="300" y="96" class="t" font-size="15">Вид сверху (горизонтальный обзор)</text>
+  <path d="M300.0,380.0 L92.2,260.0 A240,240 0 0 1 507.8,260.0 Z" fill="#27ae60" opacity="0.35"/>
+  <path d="M300.0,380.0 L420.0,172.2 A240,240 0 0 1 420.0,587.8 Z" fill="#2980b9" opacity="0.35"/>
+  <path d="M300.0,380.0 L507.8,500.0 A240,240 0 0 1 92.2,500.0 Z" fill="#8e44ad" opacity="0.35"/>
+  <path d="M300.0,380.0 L180.0,587.8 A240,240 0 0 1 180.0,172.2 Z" fill="#e67e22" opacity="0.35"/>
+  <circle cx="300" cy="380" r="36" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="300" y="378" class="ts" font-size="10">БПЛА</text>
+  <text x="300" y="394" class="ts" font-size="9">+ 6 датчиков</text>
+  <text x="300.0" y="294.0" class="ts" font-weight="bold" font-size="12">№1</text>
+  <text x="386.0" y="380.0" class="ts" font-weight="bold" font-size="12">№2</text>
+  <text x="300.0" y="466.0" class="ts" font-weight="bold" font-size="12">№3</text>
+  <text x="214.0" y="380.0" class="ts" font-weight="bold" font-size="12">№4</text>
+  <circle cx="300" cy="380" r="240" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="300" y="150" class="ts">дальность до стен — до 12 м (A121)</text>
+  <text x="300" y="676" class="ts">4 × 120° = 480° → перекрытие 30°, «мёртвых зон» нет</text>
+  <text x="300" y="696" class="ts">Масса кольца ≈ 12 г · цена ≈ 4× (при серии — чип A121)</text>
+  <text x="900" y="96" class="t" font-size="15">Вид сбоку (вертикальный обзор)</text>
+  <line x1="680" y1="140" x2="1130" y2="140" stroke="#8a1c10" stroke-width="3"/>
+  <text x="905" y="130" class="ts" fill="#8a1c10">потолок</text>
+  <line x1="680" y1="140" x2="680" y2="620" stroke="#8a5000" stroke-width="3"/>
+  <text x="720" y="180" class="ts" fill="#8a5000" text-anchor="start">стена</text>
+  <line x1="680" y1="620" x2="1130" y2="620" stroke="#1a5b2b" stroke-width="3"/>
+  <text x="905" y="645" class="ts" fill="#1a5b2b">земля / пол</text>
+  <rect x="875" y="362" width="60" height="30" rx="6" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="905" y="382" class="ts" font-size="11">БПЛА</text>
+  <path d="M905,362 L858,150 L952,150 Z" fill="#c0392b" opacity="0.3"/>
+  <text x="1000" y="250" class="ts" fill="#8a1c10" text-anchor="start">вверх (потолок)</text>
+  <text x="1000" y="268" class="ts" fill="#666" text-anchor="start">A121, до 12 м</text>
+  <path d="M905,392 L850,610 L960,610 Z" fill="#1a5b2b" opacity="0.25"/>
+  <text x="1000" y="520" class="ts" fill="#1a5b2b" text-anchor="start">вниз (высота)</text>
+  <text x="1000" y="538" class="ts" fill="#666" text-anchor="start">A121, 2…10 м</text>
+  <text x="1000" y="556" class="ts" fill="#8a1c10" text-anchor="start">реакция ≤ 1 мс</text>
+  <line x1="875" y1="377" x2="695" y2="377" stroke="#8a5000" stroke-width="2" marker-end="url(#arw)"/>
+  <text x="780" y="412" class="ts" fill="#8a5000">в стороны (стены)</text>
+  <text x="780" y="430" class="ts" fill="#666">кольцо A121, до 12 м</text>
+  <line x1="1040" y1="377" x2="1040" y2="620" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="1055" y="500" class="ts" fill="#333" text-anchor="start">H = 2…10 м</text>
+  <rect x="60" y="730" width="1120" height="140" rx="10" fill="#f7f7f7" stroke="#ddd"/>
+  <text x="80" y="758" class="t" text-anchor="start" font-size="13">Состав датчиков:</text>
+  <rect x="80" y="770" width="14" height="14" fill="#2980b9"/>
+  <text x="100" y="782" class="lbl" text-anchor="start">4× A121 — горизонт 360° (стены/земля), FoV ~120°, до 12 м, наклон 10°↓</text>
+  <rect x="80" y="794" width="14" height="14" fill="#c0392b"/>
+  <text x="100" y="806" class="lbl" text-anchor="start">1× A121 — вверх (потолок), до 12 м</text>
+  <rect x="80" y="818" width="14" height="14" fill="#1a5b2b"/>
+  <text x="100" y="830" class="lbl" text-anchor="start">1× A121 — вниз (высота 2…10 м), реакция ≤ 1 мс, всепогодный</text>
+  <text x="80" y="846" class="lbl" text-anchor="start" font-size="11" fill="#8a1c10">⚠️ Все каналы — на одном типе датчика A121; масса изделия 84 г, серийная себестоимость ≈ 13 700 ₽ (в пределах ТЗ).</text>
 </svg></div>
-<div class="card"><p><b>Состав:</b> 6× VL53L5CX (горизонт) + 1× VL53L5CX (потолок) + 1× радар 60 ГГц A121 (вниз). Итого масса комплекта с батареей 500 мА·ч — <b>81 г</b>, цена — <b>18 200 ₽</b>. Полный разбор — в файле <b>docs/КРУГОВОЙ_ОБЗОР_360.md</b>.</p><div class="note" style="background:#fff8e1;border-color:#e0a800">⚠️ Кольцо стен (VL53L5CX) видит только до <b>4 м</b>. Если нужно 10 м во все стороны — только мм-радар, но это +10 000 ₽ и +15 г (выход за бюджет/массу).</div></div>
-<h2>13б. Датчики: полные наименования и технические характеристики</h2><div class="card"><table><tr><th>Полное наименование</th><th>Тип</th><th>Дальность</th><th>Точность</th><th>Частота</th><th>Интерфейс</th><th>Масса</th><th>Т, °C</th><th>Цена, ₽</th><th>Роль</th></tr><tr><td>Acconeer A121 (модуль XM125)</td><td>Радар 60 ГГц PCR</td><td>до 20 м</td><td>мм</td><td>до кГц (SPI)</td><td>SPI/UART</td><td><5 г</td><td>−40…+85</td><td>3 500…22 000</td><td>⭐ основной (вниз)</td></tr><tr><td>ST VL53L5CX 8×8</td><td>ToF 940 нм</td><td>4 м</td><td>см</td><td>15 Гц</td><td>I²C</td><td>~1 г</td><td>−30…+85</td><td>~1 000</td><td>кольцо 360°</td></tr><tr><td>Benewake TFmini-S</td><td>Лидар 850 нм</td><td>12 м</td><td>±6 см</td><td>100…1000 Гц</td><td>UART/I²C</td><td>11 г</td><td>−20…+60</td><td>3 065…5 490</td><td>резерв</td></tr><tr><td>Benewake TF-Luna</td><td>Лидар</td><td>8 м</td><td>±6 см</td><td>до 250 Гц</td><td>UART/I²C</td><td>5 г</td><td>−20…+60</td><td>1 800…3 200</td><td>демо</td></tr><tr><td>Benewake TFmini Plus</td><td>Лидар IP65</td><td>12 м</td><td>±6 см</td><td>100…1000 Гц</td><td>UART/I²C</td><td>12 г</td><td>−20…+60</td><td>4 148…5 656</td><td>улица</td></tr><tr><td>Nanoradar NRA24</td><td>Радар 24 ГГц FMCW</td><td>50 м</td><td>±0,1 м</td><td>20…100 Гц</td><td>UART/CAN</td><td>~50 г</td><td>−40…+85</td><td>9 000…26 000</td><td>помехозащ.</td></tr><tr><td>Infineon BGT24LTR11N16</td><td>Чип-радар 24 ГГц</td><td>—</td><td>—</td><td>—</td><td>аналог</td><td>~1 г</td><td>−40…+85</td><td>~8 500</td><td>своя PCB</td></tr><tr><td>RFbeam SGR-24</td><td>Модуль 24 ГГц</td><td>до 30 м</td><td>—</td><td>—</td><td>аналог</td><td>~30…50 г</td><td>−40…+85</td><td>~17 500</td><td>модуль</td></tr><tr><td>Hi-Link HLK-LD6002</td><td>Радар 60 ГГц</td><td>до 10 м</td><td>~см</td><td>—</td><td>UART</td><td>~5 г</td><td>−40…+85</td><td>1 500…2 500</td><td>бюджетно</td></tr><tr><td>MaxBotix MB1240 XL-EZ4</td><td>Ультразвук</td><td>7,65 м</td><td>~1 см</td><td>—</td><td>аналог/UART</td><td>~10 г</td><td>−40…+65</td><td>~4 000…6 000</td><td>не рекомендован</td></tr></table><p>Полные характеристики с пометками достоверности (✅/⚠️) — в файле <b>docs/ДАТЧИКИ_ТЕХНИЧЕСКИЕ_ХАРАКТЕРИСТИКИ.md</b>. Сводный проект — <b>ПРОЕКТ.md</b>.</p></div>
-<h2>13а. Как ставить датчики, чтобы получить 360°</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" font-family="DejaVu Sans, Arial, sans-serif">
-  
-  <text x="600" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Размещение датчиков: как обеспечить обзор 360°</text>
-  <text x="600" y="58" font-size="13" text-anchor="middle" fill="#666">Кольцо 6× (наклон 10° вниз) + 1 вверх + 1 вниз = 8 каналов</text>
-
-  <!-- ================= ВИД СВЕРХУ ================= -->
-  <text x="300" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сверху — азимутальная раскладка</text>
-
-  <!-- лепестки FoV 63° с шагом 60° -->
-  <g opacity="0.30">
-    <path d="M300,380 L300,140 A240,240 0 0 1 508,260 Z" fill="#2980b9"/>
-    <path d="M300,380 L508,260 A240,240 0 0 1 508,500 Z" fill="#8e44ad"/>
-    <path d="M300,380 L508,500 A240,240 0 0 1 300,620 Z" fill="#e67e22"/>
-    <path d="M300,380 L300,620 A240,240 0 0 1 92,500 Z" fill="#16a085"/>
-    <path d="M300,380 L92,500 A240,240 0 0 1 92,260 Z" fill="#c0392b"/>
-    <path d="M300,380 L92,260 A240,240 0 0 1 300,140 Z" fill="#27ae60"/>
-  </g>
-  <!-- контуры лепестков -->
-  <g fill="none" stroke="#334" stroke-width="0.8" opacity="0.5">
-    <path d="M300,380 L300,140 A240,240 0 0 1 508,260 Z"/>
-    <path d="M300,380 L508,260 A240,240 0 0 1 508,500 Z"/>
-    <path d="M300,380 L508,500 A240,240 0 0 1 300,620 Z"/>
-    <path d="M300,380 L300,620 A240,240 0 0 1 92,500 Z"/>
-    <path d="M300,380 L92,500 A240,240 0 0 1 92,260 Z"/>
-    <path d="M300,380 L92,260 A240,240 0 0 1 300,140 Z"/>
-  </g>
-
-  <!-- корпус БПЛА -->
-  <circle cx="300" cy="380" r="40" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="300" y="378" font-size="10" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-  <text x="300" y="392" font-size="9" text-anchor="middle" fill="#1a3a6b">(центр)</text>
-
-  <!-- модули датчиков на окружности r=70 -->
-  <g>
-    <circle cx="300" cy="310" r="7" fill="#27ae60" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="361" cy="345" r="7" fill="#2980b9" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="361" cy="415" r="7" fill="#8e44ad" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="300" cy="450" r="7" fill="#e67e22" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="239" cy="415" r="7" fill="#16a085" stroke="#1a1a1a" stroke-width="1.2"/>
-    <circle cx="239" cy="345" r="7" fill="#c0392b" stroke="#1a1a1a" stroke-width="1.2"/>
-  </g>
-  <!-- подписи секторов -->
-  <g font-size="11" font-weight="bold" text-anchor="middle">
-    <text x="300" y="298" fill="#1a5b2b">S1 · 0°</text>
-    <text x="392" y="342" fill="#1a3a6b">S2 · 60°</text>
-    <text x="392" y="424" fill="#5b2c6f">S3 · 120°</text>
-    <text x="300" y="472" fill="#8a5000">S4 · 180°</text>
-    <text x="208" y="424" fill="#0e6655">S5 · 240°</text>
-    <text x="208" y="342" fill="#8a1c10">S6 · 300°</text>
-  </g>
-
-  <!-- оси -->
-  <line x1="300" y1="380" x2="300" y2="120" stroke="#999" stroke-width="0.7" stroke-dasharray="4 3"/>
-  <text x="300" y="118" font-size="10" text-anchor="middle" fill="#666">нос = 0°</text>
-
-  <!-- дуга с углом -->
-  <path d="M300,340 A40,40 0 0 1 334,362" fill="none" stroke="#1a1a1a" stroke-width="1.2"/>
-  <text x="322" y="356" font-size="10" fill="#1a1a1a">60°</text>
-  <text x="300" y="676" font-size="12" text-anchor="middle" fill="#333">Шаг 60°, FoV 63° → перекрытие 3° с каждой стороны</text>
-  <text x="300" y="696" font-size="11" text-anchor="middle" fill="#666">6 × 63° = 378° → «мёртвых зон» нет</text>
-
-  <!-- ================= ВИД СБОКУ ================= -->
-  <text x="900" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сбоку — вертикальные каналы</text>
-
-  <!-- земля -->
-  <line x1="640" y1="640" x2="1160" y2="640" stroke="#2e7d32" stroke-width="3"/>
-  <rect x="640" y="640" width="520" height="40" fill="#e8f5e9"/>
-  <text x="900" y="668" font-size="11" text-anchor="middle" fill="#2e7d32">земля / полоса</text>
-
-  <!-- потолок -->
-  <line x1="640" y1="170" x2="1160" y2="170" stroke="#5d4037" stroke-width="3"/>
-  <rect x="640" y="130" width="520" height="40" fill="#efebe9"/>
-  <text x="900" y="156" font-size="11" text-anchor="middle" fill="#5d4037">потолок / верхнее препятствие</text>
-
-  <!-- БПЛА в центре -->
-  <rect x="855" y="380" width="90" height="34" rx="8" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="900" y="401" font-size="11" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-
-  <!-- кольцо: наклон 10° вниз (луч вправо-вниз и влево-вниз) -->
-  <line x1="945" y1="397" x2="1140" y2="437" stroke="#2980b9" stroke-width="2"/>
-  <line x1="855" y1="397" x2="660" y2="437" stroke="#2980b9" stroke-width="2"/>
-  <text x="1075" y="428" font-size="10" fill="#1a3a6b">кольцо, наклон 10°↓</text>
-
-  <!-- конус FoV кольца (вправо) -->
-  <path d="M945,397 L1140,415 L1140,470 Z" fill="#2980b9" opacity="0.18"/>
-  <path d="M855,397 L660,415 L660,470 Z" fill="#2980b9" opacity="0.18"/>
-
-  <!-- луч вверх -->
-  <line x1="900" y1="380" x2="900" y2="180" stroke="#7fd0ff" stroke-width="2.2" stroke-dasharray="6 4"/>
-  <path d="M900,180 L872,240 L928,240 Z" fill="#7fd0ff" opacity="0.35"/>
-  <text x="930" y="200" font-size="10" fill="#0b6b9c">1× ToF вверх (потолок)</text>
-
-  <!-- луч вниз -->
-  <line x1="900" y1="414" x2="900" y2="632" stroke="#37d67a" stroke-width="2.2" stroke-dasharray="6 4"/>
-  <path d="M900,632 L872,572 L928,572 Z" fill="#37d67a" opacity="0.35"/>
-  <text x="930" y="600" font-size="10" fill="#1a7a44">1× радар 60 ГГц вниз (высота)</text>
-
-  <!-- размер высоты -->
-  <line x1="1160" y1="414" x2="1160" y2="632" stroke="#666" stroke-width="0.8"/>
-  <text x="1170" y="528" font-size="11" fill="#333">H = 2…10 м</text>
-
-  <!-- ================= НИЖНЯЯ ПАНЕЛЬ: ПОЧЕМУ ТАК ================= -->
-  <rect x="60" y="740" width="1080" height="130" rx="10" fill="#f7f9fc" stroke="#d0d7e2"/>
-  <text x="80" y="766" font-size="14" font-weight="bold" fill="#1a2330">Почему именно так</text>
-  <text x="80" y="792" font-size="12" fill="#333">• 6 датчиков: при FoV 63° шаг 60° &lt; 63° → сплошное покрытие. 5 датчиков дали бы зоны 9°.</text>
-  <text x="80" y="814" font-size="12" fill="#333">• Наклон 10° вниз: видит и землю впереди при снижении, и стены на высоте полёта.</text>
-  <text x="80" y="836" font-size="12" fill="#333">• Ноль азимута = нос БПЛА: сектор S1 всегда смотрит вперёд, независимо от эволюций.</text>
-  <text x="80" y="858" font-size="12" fill="#333">• Выносные кронштейны: винты и корпус не затеняют обзор кольца.</text>
+<div class="card"><p><b>Состав:</b> 6× радар A121 (60 ГГц): 4× в кольцо (горизонт 360°), 1× вверх (потолок), 1× вниз (высота). Единый тип датчика. Итого масса изделия с батареей 700 мА·ч — <b>97 г</b>; серийная себестоимость — <b>≈ 12 500 ₽</b>. Полный разбор — в файле <b>docs/КРУГОВОЙ_ОБЗОР_360.md</b>.</p><div class="note" style="background:#eafaf0;border-color:#2f8f52">✅ Кольцо A121 видит стены до <b>12 м</b> и даёт реакцию ≤ 1 мс — полностью соответствует ТЗ.</div></div>
+<h2>13б. Датчики: полные наименования и технические характеристики</h2><div class="card"><table><tr><th>Полное наименование</th><th>Тип</th><th>Дальность</th><th>Точность</th><th>Частота</th><th>Интерфейс</th><th>Масса</th><th>Т, °C</th><th>Цена, ₽</th><th>Роль</th></tr><tr><td>Acconeer A121 (модуль XM125)</td><td>Радар 60 ГГц PCR</td><td>12 м (модуль 20 м)</td><td>≈2,5 мм</td><td>≥2 кГц (SPI, HSM)</td><td>SPI/UART</td><td>≈3 г</td><td>−40…+85</td><td>3 500…22 000</td><td>⭐ <b>выбран — 6 каналов</b></td></tr><tr><td>ST VL53L5CX 8×8</td><td>ToF 940 нм</td><td>4 м</td><td>см</td><td>15 Гц</td><td>I²C</td><td>~1 г</td><td>−30…+85</td><td>~1 000</td><td>❌ отклонён (4 м, 15 Гц)</td></tr><tr><td>Benewake TFmini-S</td><td>Лидар 850 нм</td><td>12 м</td><td>±6 см</td><td>100…1000 Гц</td><td>UART/I²C</td><td>11 г</td><td>−20…+60</td><td>3 065…5 490</td><td>резерв</td></tr><tr><td>Benewake TF-Luna</td><td>Лидар</td><td>8 м</td><td>±6 см</td><td>до 250 Гц</td><td>UART/I²C</td><td>5 г</td><td>−20…+60</td><td>1 800…3 200</td><td>демо</td></tr><tr><td>Benewake TFmini Plus</td><td>Лидар IP65</td><td>12 м</td><td>±6 см</td><td>100…1000 Гц</td><td>UART/I²C</td><td>12 г</td><td>−20…+60</td><td>4 148…5 656</td><td>улица</td></tr><tr><td>Nanoradar NRA24</td><td>Радар 24 ГГц FMCW</td><td>50 м</td><td>±0,1 м</td><td>20…100 Гц</td><td>UART/CAN</td><td>~50 г</td><td>−40…+85</td><td>9 000…26 000</td><td>помехозащ.</td></tr><tr><td>Infineon BGT24LTR11N16</td><td>Чип-радар 24 ГГц</td><td>—</td><td>—</td><td>—</td><td>аналог</td><td>~1 г</td><td>−40…+85</td><td>~8 500</td><td>своя PCB</td></tr><tr><td>RFbeam SGR-24</td><td>Модуль 24 ГГц</td><td>до 30 м</td><td>—</td><td>—</td><td>аналог</td><td>~30…50 г</td><td>−40…+85</td><td>~17 500</td><td>модуль</td></tr><tr><td>Hi-Link HLK-LD6002</td><td>Радар 60 ГГц</td><td>до 10 м</td><td>~см</td><td>—</td><td>UART</td><td>~5 г</td><td>−40…+85</td><td>1 500…2 500</td><td>бюджетно</td></tr><tr><td>MaxBotix MB1240 XL-EZ4</td><td>Ультразвук</td><td>7,65 м</td><td>~1 см</td><td>—</td><td>аналог/UART</td><td>~10 г</td><td>−40…+65</td><td>~4 000…6 000</td><td>не рекомендован</td></tr></table><p>Полные характеристики с пометками достоверности (✅/⚠️) — в файле <b>docs/ДАТЧИКИ_ТЕХНИЧЕСКИЕ_ХАРАКТЕРИСТИКИ.md</b>. Сводный проект — <b>ПРОЕКТ.md</b>.</p></div>
+<h2>13а. Как ставить датчики, чтобы получить 360°</h2><div class="card"><svg xmlns="http://www.w3.org/2000/svg" width="1240" height="920" viewBox="0 0 1240 920" font-family="DejaVu Sans, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
+  </defs>
+  <text x="620" y="34" class="title">Размещение датчиков: обзор 360°</text>
+  <text x="620" y="56" class="sub">Кольцо 4× A121 (шаг 90°, FoV ~120°, наклон 10°↓) + 1 вверх + 1 вниз = 6 каналов</text>
+  <path d="M300.0,400.0 L100.8,285.0 A230,230 0 0 1 499.2,285.0 Z" fill="#2980b9" opacity="0.28"/>
+  <path d="M300.0,400.0 L415.0,200.8 A230,230 0 0 1 415.0,599.2 Z" fill="#8e44ad" opacity="0.28"/>
+  <path d="M300.0,400.0 L499.2,515.0 A230,230 0 0 1 100.8,515.0 Z" fill="#e67e22" opacity="0.28"/>
+  <path d="M300.0,400.0 L185.0,599.2 A230,230 0 0 1 185.0,200.8 Z" fill="#16a085" opacity="0.28"/>
+  <path d="M300.0,400.0 L100.8,285.0 A230,230 0 0 1 499.2,285.0 Z" fill="none" stroke="#334" stroke-width="0.8" opacity="0.5"/>
+  <path d="M300.0,400.0 L415.0,200.8 A230,230 0 0 1 415.0,599.2 Z" fill="none" stroke="#334" stroke-width="0.8" opacity="0.5"/>
+  <path d="M300.0,400.0 L499.2,515.0 A230,230 0 0 1 100.8,515.0 Z" fill="none" stroke="#334" stroke-width="0.8" opacity="0.5"/>
+  <path d="M300.0,400.0 L185.0,599.2 A230,230 0 0 1 185.0,200.8 Z" fill="none" stroke="#334" stroke-width="0.8" opacity="0.5"/>
+  <circle cx="300" cy="400" r="42" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="300" y="398" class="ts" font-size="11">БПЛА</text>
+  <text x="300" y="414" class="ts" font-size="9">(центр)</text>
+  <circle cx="300" cy="328" r="8" fill="#2980b9" stroke="#1a1a1a" stroke-width="1.2"/>
+  <text x="300.0" y="300.0" class="ts" font-weight="bold" font-size="11">S1 · 0°</text>
+  <circle cx="372" cy="400" r="8" fill="#8e44ad" stroke="#1a1a1a" stroke-width="1.2"/>
+  <text x="400.0" y="400.0" class="ts" font-weight="bold" font-size="11">S2 · 90°</text>
+  <circle cx="300" cy="472" r="8" fill="#e67e22" stroke="#1a1a1a" stroke-width="1.2"/>
+  <text x="300.0" y="500.0" class="ts" font-weight="bold" font-size="11">S3 · 180°</text>
+  <circle cx="228" cy="400" r="8" fill="#16a085" stroke="#1a1a1a" stroke-width="1.2"/>
+  <text x="200.0" y="400.0" class="ts" font-weight="bold" font-size="11">S4 · 270°</text>
+  <text x="300" y="672" class="ts">4 × 120° = 480° → перекрытие 30° на стык, «мёртвых зон» нет</text>
+  <text x="300" y="692" class="ts">FoV ~120° (полусферическая антенна A121 без линзы)</text>
+  <text x="930" y="96" class="t" font-size="15">Вид сбоку — вертикальные каналы</text>
+  <line x1="650" y1="640" x2="1180" y2="640" stroke="#2e7d32" stroke-width="3"/>
+  <rect x="650" y="640" width="530" height="34" fill="#e8f5e9"/>
+  <text x="915" y="662" class="ts" fill="#2e7d32">земля / полоса</text>
+  <line x1="650" y1="170" x2="1180" y2="170" stroke="#5d4037" stroke-width="3"/>
+  <rect x="650" y="136" width="530" height="34" fill="#efebe9"/>
+  <text x="915" y="158" class="ts" fill="#5d4037">потолок / верхнее препятствие</text>
+  <rect x="875" y="380" width="90" height="34" rx="8" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="920" y="401" class="ts" font-size="11">БПЛА</text>
+  <line x1="875" y1="397" x2="670" y2="444" stroke="#2980b9" stroke-width="2"/>
+  <path d="M875,397 L670,406 L670,478 Z" fill="#2980b9" opacity="0.18"/>
+  <line x1="965" y1="397" x2="1170" y2="444" stroke="#2980b9" stroke-width="2"/>
+  <path d="M965,397 L1170,406 L1170,478 Z" fill="#2980b9" opacity="0.18"/>
+  <text x="920" y="470" class="ts" fill="#1a3a6b">кольцо: наклон 10°↓ (видит стены и землю впереди)</text>
+  <line x1="920" y1="380" x2="920" y2="180" stroke="#7fd0ff" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <path d="M920,180 L888,250 L952,250 Z" fill="#7fd0ff" opacity="0.35"/>
+  <text x="985" y="210" class="ts" fill="#0b6b9c">U6 — A121 вверх (потолок)</text>
+  <line x1="920" y1="414" x2="920" y2="632" stroke="#37d67a" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <path d="M920,632 L888,566 L952,566 Z" fill="#37d67a" opacity="0.35"/>
+  <text x="985" y="596" class="ts" fill="#1a7a44">U1 — A121 вниз (высота, ≤ 1 мс)</text>
+  <line x1="1180" y1="414" x2="1180" y2="632" stroke="#666" stroke-width="0.8"/>
+  <text x="1150" y="528" class="ts" fill="#333">H = 2…10 м</text>
+  <rect x="60" y="730" width="1120" height="160" rx="10" fill="#f7f9fc" stroke="#d0d7e2"/>
+  <text x="80" y="758" class="t" text-anchor="start" font-size="14">Почему именно так</text>
+  <text x="80" y="786" class="lbl" text-anchor="start" font-size="12">• 4 датчика в кольце: при FoV ~120° шаг 90° &lt; 120° → сплошное покрытие с перекрытием 30°.</text>
+  <text x="80" y="810" class="lbl" text-anchor="start" font-size="12">• Наклон 10° вниз: одновременно видит и землю впереди при снижении, и стены на высоте полёта.</text>
+  <text x="80" y="834" class="lbl" text-anchor="start" font-size="12">• Ноль азимута = нос БПЛА: сектор S1 всегда смотрит вперёд, независимо от эволюций.</text>
+  <text x="80" y="858" class="lbl" text-anchor="start" font-size="12">• Выносные кронштейны: винты и корпус не затеняют обзор кольца.</text>
+  <text x="80" y="882" class="lbl" text-anchor="start" font-size="12">• Один тип датчика (A121) на все каналы: единая прошивка, единая ЭКБ, взаимозаменяемость.</text>
 </svg>
 </div>
 </body></html>

@@ -117,15 +117,16 @@
       Дальность по времени пролёта (ToF):
       <code>d = c·t / 2</code><br>
       На 10 м сигнал идёт <b>66,7 нс</b>, на 2 м — <b>13,3 нс</b>.<br>
-      Радар 60 ГГц даёт то же через разностную частоту FMCW:
-      <code>d = c·f_б / (2·B/T)</code>.
+      Радар 60 ГГц A121 (PCR) измеряет дальность по задержке отражённого
+      импульса относительно зондирующего (импульсно-когерентный метод):
+      <code>d = c·Δt / 2</code>, где Δt — задержка эхо-импульса.
     </div>
 
     <h2>Кольцо секторов</h2>
     <div class="card">
-      6 датчиков по <b>63°</b> → 6×63° = <b>378°</b>, перекрытие 18°,
+      4 датчика по <b>120°</b> → 4×120° = <b>480°</b>, перекрытие 30°,
       «мёртвых зон» нет. Срабатывает тот сектор, в чьём секторе FoV
-      находится цель. Вниз — радар A121 (высота), вверх — модуль потолка.
+      находится цель. Вниз — радар A121 (высота), вверх — A121 (потолок).
     </div>
 
     <h2>Состояния</h2>
@@ -224,8 +225,8 @@ const S = {
 };
 const OURS = {x:0, y:0};
 
-const SECTORS = 6;
-const FOV = 63*Math.PI/180;
+const SECTORS = 4;
+const FOV = 120*Math.PI/180;
 const NAMES = ['В','ЮВ','Ю','ЮЗ','З','СЗ','С','СВ'];
 
 function compass(deg){
@@ -236,7 +237,7 @@ function compass(deg){
 function activeSectors(ang){
   const out=[];
   for(let k=0;k<SECTORS;k++){
-    const c = k*Math.PI/3;
+    const c = k*Math.PI/2;
     let diff = Math.abs(((ang - c + Math.PI*3) % (Math.PI*2)) - Math.PI);
     if(diff <= FOV/2) out.push(k);
   }
@@ -286,7 +287,7 @@ function ring(m, col, dash, label){
 
 function drawSectors(){
   for(let k=0;k<SECTORS;k++){
-    const c=k*Math.PI/3;
+    const c=k*Math.PI/2;
     const on = S.active.includes(k);
     ctx.beginPath();
     ctx.moveTo(CX,CY);

@@ -1,97 +1,89 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" font-family="DejaVu Sans, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="780" viewBox="0 0 1260 780" font-family="DejaVu Sans, Arial, sans-serif">
   <defs>
-    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
-      <path d="M0,0 L9,3 L0,6 z" fill="#334"/>
-    </marker>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
     <style>
       .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
       .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
       .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
       .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
-      .t{font-size:15px;fill:#1a2330;text-anchor:middle}
-      .ts{font-size:12px;fill:#556;text-anchor:middle}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
       .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
-      .title{font-size:22px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
       .lbl{font-size:11px;fill:#334;text-anchor:middle}
     </style>
   </defs>
-  <text x="600" y="34" class="title">Автономная система предупреждения о малой высоте БПЛА — структурная схема</text>
-  <text x="600" y="56" class="ts">Вариант B (основной): радар 60 ГГц + лидар для сравнения · порог 2…10 м от СУ БПЛА · сигнальный выход</text>
-
-  <!-- Sensors -->
-  <rect class="box3" x="40" y="110" width="210" height="90"/>
-  <text x="145" y="145" class="t">Радар Acconeer XM125</text>
-  <text x="145" y="168" class="ts">60 ГГц, FMCW, UART</text>
-  <text x="145" y="185" class="ts">всепогодный, до ~20 м</text>
-
-  <rect class="box3" x="40" y="250" width="210" height="90"/>
-  <text x="145" y="285" class="t">Лидар Benewake TFmini-S</text>
-  <text x="145" y="308" class="ts">905 нм, UART/I²C</text>
-  <text x="145" y="325" class="ts">±6 см, 0,1…12 м</text>
-
-  <rect class="box3" x="40" y="390" width="210" height="80"/>
-  <text x="145" y="422" class="t">Инерциальный модуль</text>
-  <text x="145" y="443" class="ts">(опция) IMU/барометр</text>
-
-  <!-- MCU -->
-  <rect class="box" x="360" y="180" width="240" height="230"/>
-  <text x="480" y="220" class="t">Микроконтроллер</text>
-  <text x="480" y="242" class="t">STM32G474</text>
-  <text x="480" y="268" class="ts">приём данных датчиков</text>
-  <text x="480" y="288" class="ts">фильтр (медиана/Калман)</text>
-  <text x="480" y="308" class="ts">сравнение с порогом H_ср</text>
-  <text x="480" y="328" class="ts">формирование флага</text>
-  <text x="480" y="348" class="ts">телеметрия в СУ БПЛА</text>
-  <text x="480" y="372" class="ts">таймаут-контроль (Fail-Safe)</text>
-
-  <!-- Power -->
-  <rect class="box2" x="360" y="450" width="240" height="80"/>
-  <text x="480" y="482" class="t">Питание</text>
-  <text x="480" y="503" class="ts">BEC +5 В → LDO/DCDC +3,3 В</text>
-
-  <!-- Output -->
-  <rect class="box4" x="720" y="110" width="210" height="90"/>
-  <text x="825" y="145" class="t">Оповещение</text>
-  <text x="825" y="168" class="ts">зуммер + LED</text>
-  <text x="825" y="185" class="ts">(на борту)</text>
-
-  <rect class="box4" x="720" y="250" width="210" height="90"/>
-  <text x="825" y="285" class="t">Дискретный выход</text>
-  <text x="825" y="308" class="ts">«LOW ALT» (транзистор/</text>
-  <text x="825" y="325" class="ts">оптопара, открытый сток)</text>
-
-  <rect class="box" x="720" y="390" width="210" height="90"/>
-  <text x="825" y="425" class="t">CAN-трансивер</text>
-  <text x="825" y="448" class="ts">TJA1051</text>
-  <text x="825" y="465" class="ts">телеметрия и задание порога</text>
-
-  <!-- UAV -->
-  <rect class="box" x="1000" y="250" width="170" height="90"/>
-  <text x="1085" y="285" class="t">СУ БПЛА</text>
-  <text x="1085" y="308" class="ts">полётный контроллер</text>
-  <text x="1085" y="325" class="ts">пилот / автопилот</text>
-
-  <!-- wires sensors -> mcu -->
-  <path class="wire" d="M250,155 C310,155 310,240 360,240"/>
-  <path class="wire" d="M250,295 C310,295 310,300 360,300"/>
-  <path class="wire" d="M250,430 C310,430 310,360 360,360"/>
-
-  <!-- power -> mcu -->
-  <path class="wire" d="M480,450 L480,410"/>
-
-  <!-- mcu -> outputs -->
-  <path class="wire" d="M600,220 C660,220 660,155 720,155"/>
-  <path class="wire" d="M600,270 C660,270 660,295 720,295"/>
-  <path class="wire" d="M600,330 C660,330 660,435 720,435"/>
-
-  <!-- outputs -> UAV -->
-  <path class="wire" d="M930,295 C970,295 970,290 1000,290"/>
-  <path class="wire" d="M930,435 C970,435 970,320 1000,320"/>
-
-  <!-- power from UAV -->
-  <path class="wire" d="M1085,340 C1085,560 480,560 480,530" stroke-dasharray="6 4"/>
-
-  <text x="480" y="600" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи.</text>
-  <text x="480" y="624" class="lbl">Порог срабатывания H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
-  <text x="480" y="648" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные, исполнительных (инициирующих) цепей нет.</text>
+  <text x="630" y="34" class="title">Автономное сигнальное устройство малой высоты БПЛА — структурная схема</text>
+  <text x="630" y="56" class="sub">Единый тип датчика: 6× радар Acconeer A121 (60 ГГц PCR, SPI) · порог 2…10 м от СУ БПЛА · только сигнальные выходы</text>
+  <rect class="box3" x="28" y="88" width="244" height="70"/>
+  <text x="150" y="112" class="t">U1 · A121 (вниз)</text>
+  <text x="150" y="132" class="ts">с линзой, узкий луч</text>
+  <text x="150" y="150" class="ts">высота 2…10 м, ≤ 1 мс</text>
+  <rect class="box3" x="28" y="169" width="244" height="70"/>
+  <text x="150" y="193" class="t">U2 · A121 (кольцо 0°)</text>
+  <text x="150" y="213" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="231" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="250" width="244" height="70"/>
+  <text x="150" y="274" class="t">U3 · A121 (кольцо 90°)</text>
+  <text x="150" y="294" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="312" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="331" width="244" height="70"/>
+  <text x="150" y="355" class="t">U4 · A121 (кольцо 180°)</text>
+  <text x="150" y="375" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="393" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="412" width="244" height="70"/>
+  <text x="150" y="436" class="t">U5 · A121 (кольцо 270°)</text>
+  <text x="150" y="456" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="474" class="ts">наклон 10°↓ · стены/земля</text>
+  <rect class="box3" x="28" y="493" width="244" height="70"/>
+  <text x="150" y="517" class="t">U6 · A121 (вверх)</text>
+  <text x="150" y="537" class="ts">широкий FoV, SPI</text>
+  <text x="150" y="555" class="ts">потолок / препятствия</text>
+  <rect class="box" x="388" y="158" width="252" height="300"/>
+  <text x="514" y="192" class="t">Микроконтроллер</text>
+  <text x="514" y="214" class="t">STM32G474</text>
+  <text x="514" y="238" class="ts">SPI-приём сырых данных A121</text>
+  <text x="514" y="258" class="ts">6× CS (выбор датчика) + 6× INT</text>
+  <text x="514" y="278" class="ts">фильтр (медиана / Калман)</text>
+  <text x="514" y="298" class="ts">сравнение с порогом H_ср</text>
+  <text x="514" y="318" class="ts">формирование флага</text>
+  <text x="514" y="338" class="ts">телеметрия в СУ БПЛА</text>
+  <text x="514" y="358" class="ts">таймаут-контроль (Fail-Safe)</text>
+  <text x="514" y="378" class="ts">приём уставки H_ср по CAN</text>
+  <rect class="box2" x="388" y="480" width="252" height="78"/>
+  <text x="514" y="510" class="t">Питание</text>
+  <text x="514" y="532" class="ts">BEC +5 В → DC-DC +3,3 В</text>
+  <rect class="box4" x="752" y="88" width="226" height="80"/>
+  <text x="865" y="118" class="t">Оповещение</text>
+  <text x="865" y="138" class="ts">зуммер + LED (на борту)</text>
+  <text x="865" y="156" class="ts">пилот слышит / видит</text>
+  <rect class="box4" x="752" y="198" width="226" height="80"/>
+  <text x="865" y="228" class="t">Дискретный выход</text>
+  <text x="865" y="248" class="ts">«LOW ALT» (откр. сток /</text>
+  <text x="865" y="266" class="ts">оптопара) — флаг</text>
+  <rect class="box" x="752" y="338" width="226" height="80"/>
+  <text x="865" y="368" class="t">CAN-трансивер</text>
+  <text x="865" y="388" class="ts">TJA1051</text>
+  <text x="865" y="406" class="ts">телеметрия + уставка</text>
+  <rect class="box" x="1040" y="338" width="188" height="80"/>
+  <text x="1134" y="370" class="t">СУ БПЛА</text>
+  <text x="1134" y="390" class="ts">полётный контроллер</text>
+  <text x="1134" y="408" class="ts">пилот / автопилот</text>
+  <path class="wire" d="M272,123 C330,123 340,208 388,208"/>
+  <path class="wire" d="M272,204 C330,204 340,238 388,238"/>
+  <path class="wire" d="M272,285 C330,285 340,268 388,268"/>
+  <path class="wire" d="M272,366 C330,366 340,298 388,298"/>
+  <path class="wire" d="M272,447 C330,447 340,328 388,328"/>
+  <path class="wire" d="M272,528 C330,528 340,358 388,358"/>
+  <path class="wire" d="M514,480 L514,458"/>
+  <path class="wire" d="M640,128 C700,128 700,128 752,128"/>
+  <path class="wire" d="M640,238 C700,238 700,238 752,238"/>
+  <path class="wire" d="M640,378 C700,378 700,378 752,378"/>
+  <path class="wire" d="M978,238 C1010,238 1010,368 1040,368"/>
+  <path class="wire" d="M978,378 C1010,378 1010,388 1040,388"/>
+  <path class="wire" d="M1134,418 C1134,648 514,648 514,558" stroke-dasharray="6 4"/>
+  <text x="630" y="700" class="lbl">Штриховая линия — питание +5 В от бортовой сети БПЛА (BEC). Сплошные — сигнальные связи (SPI, CAN).</text>
+  <text x="630" y="722" class="lbl">Порог H_ср (2…10 м) задаётся из СУ БПЛА по CAN; при потере связи сохраняется последнее значение.</text>
+  <text x="630" y="744" class="lbl">Выходы «LOW ALT» и «зуммер/LED» — только сигнальные; исполнительных (инициирующих) цепей нет.</text>
 </svg>

@@ -1,94 +1,65 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="880" viewBox="0 0 1200 880" font-family="DejaVu Sans, Arial, sans-serif">
-  <rect width="1200" height="880" fill="#ffffff"/>
-  <text x="600" y="34" font-size="22" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Покрытие 360°: земля, стены, потолок</text>
-  <text x="600" y="58" font-size="13" text-anchor="middle" fill="#666">6× VL53L5CX (горизонт) + 1 вверх + радар 60 ГГц A121 вниз</text>
-
-  <!-- ============ ВИД СВЕРХУ ============ -->
-  <text x="300" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сверху (горизонтальный обзор)</text>
-
-  <!-- центр -->
-  <circle cx="300" cy="360" r="34" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="300" y="358" font-size="10" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-  <text x="300" y="372" font-size="9" text-anchor="middle" fill="#1a3a6b">+ датчик</text>
-
-  <!-- 6 секторов по 63 градуса (перекрытие) -->
-  <g opacity="0.35">
-    <path d="M300,360 L300,120 A240,240 0 0 1 508,240 Z" fill="#27ae60"/>
-    <path d="M300,360 L508,240 A240,240 0 0 1 508,480 Z" fill="#2980b9"/>
-    <path d="M300,360 L508,480 A240,240 0 0 1 300,600 Z" fill="#8e44ad"/>
-    <path d="M300,360 L300,600 A240,240 0 0 1 92,480 Z" fill="#e67e22"/>
-    <path d="M300,360 L92,480 A240,240 0 0 1 92,240 Z" fill="#16a085"/>
-    <path d="M300,360 L92,240 A240,240 0 0 1 300,120 Z" fill="#c0392b"/>
-  </g>
-
-  <!-- лучи/подписи датчиков -->
-  <g font-size="11" font-weight="bold" text-anchor="middle">
-    <text x="300" y="112" fill="#1a5b2b">№1</text>
-    <text x="524" y="236" fill="#1a3a6b">№2</text>
-    <text x="524" y="486" fill="#5b2c6f">№3</text>
-    <text x="300" y="620" fill="#8a5000">№4</text>
-    <text x="76" y="486" fill="#0e6655">№5</text>
-    <text x="76" y="236" fill="#8a1c10">№6</text>
-  </g>
-
-  <!-- дальность 4 м -->
-  <circle cx="300" cy="360" r="240" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="6 4"/>
-  <text x="300" y="150" font-size="11" text-anchor="middle" fill="#333">дальность до стен 4 м (VL53L5CX)</text>
-
-  <text x="300" y="670" font-size="12" text-anchor="middle" fill="#333">6 × 63° = 378° → перекрытие 18°, «мёртвых зон» нет</text>
-  <text x="300" y="690" font-size="11" text-anchor="middle" fill="#666">Цена кольца ≈ 6 000 ₽, масса ≈ 6 г</text>
-
-  <!-- ============ ВИД СБОКУ ============ -->
-  <text x="880" y="100" font-size="16" font-weight="bold" text-anchor="middle" fill="#1a2330">Вид сбоку (вертикальный обзор)</text>
-
-  <!-- потолок -->
-  <line x1="660" y1="140" x2="1100" y2="140" stroke="#8a1c10" stroke-width="3"/>
-  <text x="880" y="132" font-size="12" text-anchor="middle" fill="#8a1c10">потолок</text>
-
-  <!-- стена слева -->
-  <line x1="660" y1="140" x2="660" y2="620" stroke="#8a5000" stroke-width="3"/>
-  <text x="700" y="180" font-size="11" fill="#8a5000">стена</text>
-
-  <!-- пол -->
-  <line x1="660" y1="620" x2="1100" y2="620" stroke="#1a5b2b" stroke-width="3"/>
-  <text x="880" y="645" font-size="12" text-anchor="middle" fill="#1a5b2b">земля / пол</text>
-
-  <!-- БПЛА в центре -->
-  <rect x="850" y="360" width="60" height="30" rx="6" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
-  <text x="880" y="380" font-size="11" text-anchor="middle" fill="#1a3a6b">БПЛА</text>
-
-  <!-- луч вверх -->
-  <path d="M880,360 L830,150 L930,150 Z" fill="#c0392b" opacity="0.3"/>
-  <line x1="880" y1="360" x2="880" y2="150" stroke="#c0392b" stroke-width="2" marker-end="url(#a2)"/>
-  <text x="955" y="250" font-size="11" fill="#8a1c10">вверх (потолок)</text>
-  <text x="955" y="266" font-size="10" fill="#666">VL53L5CX, до 4 м</text>
-
-  <!-- луч вниз -->
-  <path d="M880,390 L820,610 L940,610 Z" fill="#1a5b2b" opacity="0.25"/>
-  <line x1="880" y1="390" x2="880" y2="600" stroke="#1a5b2b" stroke-width="2"/>
-  <text x="955" y="520" font-size="11" fill="#1a5b2b">вниз (высота)</text>
-  <text x="955" y="536" font-size="10" fill="#666">радар A121, 2…10 м</text>
-  <text x="955" y="552" font-size="10" fill="#8a1c10">реакция ≤1 мс</text>
-
-  <!-- луч в сторону -->
-  <line x1="850" y1="375" x2="670" y2="375" stroke="#8a5000" stroke-width="2" marker-end="url(#a3)"/>
-  <text x="760" y="410" font-size="11" fill="#8a5000">в стороны (стены)</text>
-  <text x="760" y="426" font-size="10" fill="#666">кольцо VL53L5CX, до 4 м</text>
-
-  <!-- высота полёта -->
-  <line x1="1010" y1="375" x2="1010" y2="620" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
-  <text x="1020" y="500" font-size="11" fill="#333">H = 2…10 м</text>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="900" viewBox="0 0 1240 900" font-family="DejaVu Sans, Arial, sans-serif">
   <defs>
-    <marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#c0392b"/></marker>
-    <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#8a5000"/></marker>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 z" fill="#334"/></marker>
+    <style>
+      .box{fill:#eef4fb;stroke:#2b5f9e;stroke-width:2}
+      .box2{fill:#fdf1e6;stroke:#c07a2b;stroke-width:2}
+      .box3{fill:#eafaf0;stroke:#2f8f52;stroke-width:2}
+      .box4{fill:#fdeaea;stroke:#b33;stroke-width:2}
+      .t{font-size:14px;fill:#1a2330;text-anchor:middle;font-weight:bold}
+      .ts{font-size:11px;fill:#556;text-anchor:middle}
+      .wire{stroke:#334;stroke-width:2;fill:none;marker-end:url(#arw)}
+      .title{font-size:21px;font-weight:bold;fill:#12283f;text-anchor:middle}
+      .sub{font-size:12.5px;fill:#556;text-anchor:middle}
+      .lbl{font-size:11px;fill:#334;text-anchor:middle}
+    </style>
   </defs>
-
-  <!-- ============ ЛЕГЕНДА ============ -->
-  <rect x="60" y="730" width="1080" height="120" rx="10" fill="#f7f7f7" stroke="#ddd"/>
-  <text x="80" y="756" font-size="13" font-weight="bold" fill="#333">Состав датчиков:</text>
-  <rect x="80" y="768" width="14" height="14" fill="#2980b9"/><text x="100" y="780" font-size="11" fill="#333">6× VL53L5CX — горизонт 360° (стены), до 4 м, 6 г, ~6 000 ₽</text>
-  <rect x="80" y="790" width="14" height="14" fill="#c0392b"/><text x="100" y="802" font-size="11" fill="#333">1× VL53L5CX — вверх (потолок), до 4 м, 1 г, ~1 000 ₽</text>
-  <rect x="80" y="812" width="14" height="14" fill="#1a5b2b"/><text x="100" y="824" font-size="11" fill="#333">1× радар 60 ГГц A121 — вниз (высота 2…10 м), реакция ≤1 мс, всепогодный, 5 г, ~3 600 ₽</text>
-  <text x="80" y="844" font-size="11" fill="#8a1c10">⚠️ Кольцо стен видит только до 4 м. Для 10 м во все стороны нужен мм-радар (+10 000 ₽, +15 г).</text>
+  <text x="620" y="34" class="title">Покрытие 360°: земля, стены, потолок</text>
+  <text x="620" y="56" class="sub">6× радар Acconeer A121 (60 ГГц PCR) — единый тип датчика на все направления</text>
+  <text x="300" y="96" class="t" font-size="15">Вид сверху (горизонтальный обзор)</text>
+  <path d="M300.0,380.0 L92.2,260.0 A240,240 0 0 1 507.8,260.0 Z" fill="#27ae60" opacity="0.35"/>
+  <path d="M300.0,380.0 L420.0,172.2 A240,240 0 0 1 420.0,587.8 Z" fill="#2980b9" opacity="0.35"/>
+  <path d="M300.0,380.0 L507.8,500.0 A240,240 0 0 1 92.2,500.0 Z" fill="#8e44ad" opacity="0.35"/>
+  <path d="M300.0,380.0 L180.0,587.8 A240,240 0 0 1 180.0,172.2 Z" fill="#e67e22" opacity="0.35"/>
+  <circle cx="300" cy="380" r="36" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="300" y="378" class="ts" font-size="10">БПЛА</text>
+  <text x="300" y="394" class="ts" font-size="9">+ 6 датчиков</text>
+  <text x="300.0" y="294.0" class="ts" font-weight="bold" font-size="12">№1</text>
+  <text x="386.0" y="380.0" class="ts" font-weight="bold" font-size="12">№2</text>
+  <text x="300.0" y="466.0" class="ts" font-weight="bold" font-size="12">№3</text>
+  <text x="214.0" y="380.0" class="ts" font-weight="bold" font-size="12">№4</text>
+  <circle cx="300" cy="380" r="240" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="6 4"/>
+  <text x="300" y="150" class="ts">дальность до стен — до 12 м (A121)</text>
+  <text x="300" y="676" class="ts">4 × 120° = 480° → перекрытие 30°, «мёртвых зон» нет</text>
+  <text x="300" y="696" class="ts">Масса кольца ≈ 12 г · цена ≈ 4× (при серии — чип A121)</text>
+  <text x="900" y="96" class="t" font-size="15">Вид сбоку (вертикальный обзор)</text>
+  <line x1="680" y1="140" x2="1130" y2="140" stroke="#8a1c10" stroke-width="3"/>
+  <text x="905" y="130" class="ts" fill="#8a1c10">потолок</text>
+  <line x1="680" y1="140" x2="680" y2="620" stroke="#8a5000" stroke-width="3"/>
+  <text x="720" y="180" class="ts" fill="#8a5000" text-anchor="start">стена</text>
+  <line x1="680" y1="620" x2="1130" y2="620" stroke="#1a5b2b" stroke-width="3"/>
+  <text x="905" y="645" class="ts" fill="#1a5b2b">земля / пол</text>
+  <rect x="875" y="362" width="60" height="30" rx="6" fill="#e8f0fe" stroke="#3367d6" stroke-width="2"/>
+  <text x="905" y="382" class="ts" font-size="11">БПЛА</text>
+  <path d="M905,362 L858,150 L952,150 Z" fill="#c0392b" opacity="0.3"/>
+  <text x="1000" y="250" class="ts" fill="#8a1c10" text-anchor="start">вверх (потолок)</text>
+  <text x="1000" y="268" class="ts" fill="#666" text-anchor="start">A121, до 12 м</text>
+  <path d="M905,392 L850,610 L960,610 Z" fill="#1a5b2b" opacity="0.25"/>
+  <text x="1000" y="520" class="ts" fill="#1a5b2b" text-anchor="start">вниз (высота)</text>
+  <text x="1000" y="538" class="ts" fill="#666" text-anchor="start">A121, 2…10 м</text>
+  <text x="1000" y="556" class="ts" fill="#8a1c10" text-anchor="start">реакция ≤ 1 мс</text>
+  <line x1="875" y1="377" x2="695" y2="377" stroke="#8a5000" stroke-width="2" marker-end="url(#arw)"/>
+  <text x="780" y="412" class="ts" fill="#8a5000">в стороны (стены)</text>
+  <text x="780" y="430" class="ts" fill="#666">кольцо A121, до 12 м</text>
+  <line x1="1040" y1="377" x2="1040" y2="620" stroke="#333" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="1055" y="500" class="ts" fill="#333" text-anchor="start">H = 2…10 м</text>
+  <rect x="60" y="730" width="1120" height="140" rx="10" fill="#f7f7f7" stroke="#ddd"/>
+  <text x="80" y="758" class="t" text-anchor="start" font-size="13">Состав датчиков:</text>
+  <rect x="80" y="770" width="14" height="14" fill="#2980b9"/>
+  <text x="100" y="782" class="lbl" text-anchor="start">4× A121 — горизонт 360° (стены/земля), FoV ~120°, до 12 м, наклон 10°↓</text>
+  <rect x="80" y="794" width="14" height="14" fill="#c0392b"/>
+  <text x="100" y="806" class="lbl" text-anchor="start">1× A121 — вверх (потолок), до 12 м</text>
+  <rect x="80" y="818" width="14" height="14" fill="#1a5b2b"/>
+  <text x="100" y="830" class="lbl" text-anchor="start">1× A121 — вниз (высота 2…10 м), реакция ≤ 1 мс, всепогодный</text>
+  <text x="80" y="846" class="lbl" text-anchor="start" font-size="11" fill="#8a1c10">⚠️ Все каналы — на одном типе датчика A121; масса изделия 84 г, серийная себестоимость ≈ 13 700 ₽ (в пределах ТЗ).</text>
 </svg>
