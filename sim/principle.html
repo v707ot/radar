@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Принцип обнаружения по дальности — датчик малой высоты БПЛА</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#111c30; --panel2:#0d1728; --line:#22324d;
+    --txt:#dbe6f5; --sub:#8fa6c6; --blue:#4da3ff; --green:#37d67a;
+    --amber:#ffb020; --red:#ff5a5a; --violet:#b07dff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 700px at 30% 0%, #101a30 0%, var(--bg) 60%);
+       color:var(--txt);font:15px/1.55 "DejaVu Sans",Arial,sans-serif;min-height:100vh}
+  header{padding:20px 24px 8px;max-width:1180px;margin:0 auto}
+  h1{margin:0 0 4px;font-size:22px}
+  h1 small{display:block;font-size:13px;color:var(--sub);font-weight:400;margin-top:4px}
+  .nav{margin:10px 0 0;font-size:13px}
+  .nav a{color:var(--blue);text-decoration:none;margin-right:14px}
+  .nav a:hover{text-decoration:underline}
+  main{max-width:1180px;margin:0 auto;padding:12px 24px 48px}
+  .grid{display:grid;grid-template-columns:1.55fr 1fr;gap:18px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h2{margin:0 0 10px;font-size:15px;color:#bcd3f0;font-weight:600}
+  canvas{width:100%;display:block;border-radius:10px;background:var(--panel2)}
+  .ctl{display:flex;flex-direction:column;gap:14px}
+  .row{display:flex;align-items:center;gap:10px}
+  .row label{flex:0 0 150px;color:var(--sub);font-size:13px}
+  input[type=range]{flex:1;accent-color:var(--blue)}
+  .val{flex:0 0 74px;text-align:right;font-variant-numeric:tabular-nums;color:#cfe0ff}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  button{background:#16233b;color:var(--txt);border:1px solid var(--line);border-radius:8px;
+         padding:8px 13px;font-size:13px;cursor:pointer}
+  button:hover{background:#1d2c4a;border-color:#2b3f63}
+  button.on{background:rgba(77,163,255,.18);border-color:var(--blue);color:#bcd9ff}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .kv{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .kv b{display:block;font-size:11px;color:var(--sub);font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+  .kv span{font-size:19px;font-variant-numeric:tabular-nums}
+  .state{font-size:20px;font-weight:700;text-align:center;border-radius:9px;padding:11px;margin-top:8px;
+         border:1px solid var(--line);background:var(--panel2)}
+  .s-norm{color:var(--green);border-color:rgba(55,214,122,.5)!important}
+  .s-warn{color:var(--amber);border-color:rgba(255,176,32,.5)!important}
+  .s-alarm{color:var(--red);border-color:rgba(255,90,90,.6)!important;animation:pulse 0.8s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,90,90,.35)}50%{box-shadow:0 0 0 8px rgba(255,90,90,0)}}
+  .note{background:#0f1b2e;border-left:3px solid var(--blue);border-radius:8px;padding:10px 14px;
+        color:#a9c0de;font-size:13px;margin-top:14px}
+  code{background:#0a1526;padding:1px 6px;border-radius:5px;color:#cfe0ff;font-size:13px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--sub);margin-top:8px}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:6px 9px;text-align:left}
+  th{background:#0f1b2e;color:#bcd3f0;font-weight:600}
+  .ok{color:var(--green)} .bad{color:var(--red)} .wr{color:var(--amber)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Принцип обнаружения по дальности
+    <small>Автономное сигнальное устройство малой высоты БПЛА · датчик Acconeer A121 (60 ГГц PCR)</small>
+  </h1>
+  <div class="nav">
+    <a href="../preview.html">Обзор</a>
+    <a href="../project.html">Проект</a>
+    <a href="../sensors.html">Датчики</a>
+    <a href="detection.html">2D-демо</a>
+    <a href="detection3d.html">3D-демо</a>
+  </div>
+</header>
+
+<main>
+<div class="grid">
+  <!-- ЛЕВАЯ КОЛОНКА: осциллограмма импульсов -->
+  <div class="card">
+    <h2>1. Сцена: высота и порог срабатывания</h2>
+    <canvas id="scene" width="760" height="230"></canvas>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>2. Измерение дальности: зондирующий импульс и эхо</h2>
+    <canvas id="scope" width="760" height="300"></canvas>
+    <div class="legend">
+      <span><i style="background:var(--blue)"></i>Зондирующий импульс</span>
+      <span><i style="background:var(--green)"></i>Эхо от поверхности</span>
+      <span><i style="background:var(--violet)"></i>Δt = время пролёта</span>
+      <span><i style="background:var(--red)"></i>Порог H<sub>ср</sub></span>
+    </div>
+    <div class="note">
+      Радар A121 (60 ГГц, импульсно-когерентный) посылает короткий импульс и принимает эхо.
+      Дальность считается по задержке: <code>d = c·Δt / 2</code>, где
+      <code>c = 299 792 458 м/с</code>, а деление на 2 — путь «туда и обратно».
+      На 2 м сигнал идёт <b>13,3 нс</b>, на 10 м — <b>66,7 нс</b>.
+    </div>
+  </div>
+
+  <!-- ПРАВАЯ КОЛОНКА: управление и показания -->
+  <div class="ctl">
+    <div class="card">
+      <h2>3. Управление</h2>
+      <div class="row"><label>Истинная высота d</label>
+        <input type="range" id="d" min="0.5" max="14" step="0.1" value="9.5">
+        <span class="val" id="dv">9,5 м</span></div>
+      <div class="row"><label>Порог срабатывания H<sub>ср</sub></label>
+        <input type="range" id="h" min="2" max="10" step="0.1" value="5">
+        <span class="val" id="hv">5,0 м</span></div>
+      <div class="row"><label>Скорость снижения</label>
+        <input type="range" id="v" min="0" max="5" step="0.1" value="1.5">
+        <span class="val" id="vv">1,5 м/с</span></div>
+      <div class="btns">
+        <button id="run" class="on">▶ Снижение</button>
+        <button id="reset">↺ Сброс</button>
+        <button id="sound">🔇 Звук</button>
+      </div>
+      <div class="note" style="margin-top:12px">
+        Двиньте ползунок «Порог» — так система управления БПЛА перестраивает высоту
+        срабатывания по CAN (требование 1: 2…10 м).
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. Показания датчика</h2>
+      <div class="readout">
+        <div class="kv"><b>Измеренная дальность</b><span id="dm">—</span></div>
+        <div class="kv"><b>Погрешность ε</b><span id="err">—</span></div>
+        <div class="kv"><b>Время пролёта Δt</b><span id="dt">—</span></div>
+        <div class="kv"><b>Запас до порога</b><span id="marg">—</span></div>
+      </div>
+      <div class="state s-norm" id="state">НОРМА</div>
+      <div class="note" style="margin-top:10px" id="act">
+        Оповещение выключено. Устройство выдаёт телеметрию высоты по CAN.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>5. Реакция (требование ≤ 1 мс)</h2>
+      <table>
+        <tr><th>Звено</th><th>Время</th></tr>
+        <tr><td>Накладные расходы кадра A121 (HSM)</td><td class="ok">≈ 36 мкс</td></tr>
+        <tr><td>Съём сырых данных по SPI</td><td class="ok">≈ 40 мкс</td></tr>
+        <tr><td>Сравнение с порогом на MCU</td><td class="ok">≈ 2 мкс</td></tr>
+        <tr><td>Включение зуммера/LED</td><td class="ok">≈ 120 мкс</td></tr>
+        <tr><th>Итого от эха до сигнала</th><th class="ok">≈ 200 мкс ≤ 1 мс</th></tr>
+      </table>
+      <div class="note">Запас ≈ 5×. Лидар TFmini-S (1,12 мс) требование не выполняет.</div>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+"use strict";
+const C = 299792458;                     // м/с
+const el = id => document.getElementById(id);
+const cvS = el('scene'), ctxS = cvS.getContext('2d');
+const cvO = el('scope'), ctxO = cvO.getContext('2d');
+const WS = cvS.width, HS = cvS.height;
+const WO = cvO.width, HO = cvO.height;
+
+const S = {
+  d: 9.5, hsr: 5.0, v: 1.5,
+  running: true, sound: false,
+  t: 0,                        // время анимации, с
+  beep: 0,                     // фаза звукового сигнала
+  wasAlarm: false
+};
+
+/* ---------- звук ---------- */
+let actx = null;
+function initAudio(){
+  if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } }
+}
+function beep(freq){
+  if(!S.sound || !actx) return;
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'square'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.12, actx.currentTime + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.09);
+  o.connect(g); g.connect(actx.destination);
+  o.start(); o.stop(actx.currentTime + 0.1);
+}
+
+/* ---------- элементы ---------- */
+const dS = el('d'), hS = el('h'), vS = el('v');
+
+function syncLabels(){
+  el('dv').textContent = S.d.toFixed(1).replace('.',',') + ' м';
+  el('hv').textContent = S.hsr.toFixed(1).replace('.',',') + ' м';
+  el('vv').textContent = S.v.toFixed(1).replace('.',',') + ' м/с';
+}
+dS.addEventListener('input', ()=>{ S.d = +dS.value; syncLabels(); });
+hS.addEventListener('input', ()=>{ S.hsr = +hS.value; syncLabels(); });
+vS.addEventListener('input', ()=>{ S.v = +vS.value; syncLabels(); });
+
+el('run').addEventListener('click', e=>{
+  S.running = !S.running;
+  e.target.classList.toggle('on', S.running);
+  e.target.textContent = S.running ? '▶ Снижение' : '⏸ Пауза';
+});
+el('reset').addEventListener('click', ()=>{
+  S.d = 12; dS.value = 12; S.t = 0; S.wasAlarm = false; syncLabels();
+});
+el('sound').addEventListener('click', e=>{
+  S.sound = !S.sound;
+  e.target.classList.toggle('on', S.sound);
+  e.target.textContent = S.sound ? '🔊 Звук' : '🔇 Звук';
+  if(S.sound) initAudio();
+});
+
+/* ---------- модель измерения ---------- */
+// Смещение и шум датчика (погрешность ≤ 1 м по ТЗ)
+const BIAS = 0.03, NOISE = 0.04;
+function measured(d){
+  // псевдослучайный шум, детерминированный по времени — без Math.random для плавности
+  const n = Math.sin(S.t*37.1)*0.5 + Math.sin(S.t*13.7)*0.5;
+  return d + BIAS + n*NOISE;
+}
+
+/* ---------- отрисовка осциллограммы ---------- */
+function drawScope(){
+  const ctx = ctxO, W = WO, H = HO;
+  ctx.clearRect(0,0,W,H);
+  const padL = 54, padR = 18, padT = 26, padB = 34;
+  const x0 = padL, x1 = W - padR, y0 = H - padB, y1 = padT;
+  const tMax = 1.2e-7;               // 120 нс — окно развёртки
+  const tEmit = 8e-9;                // зондирующий импульс
+  const d = S.d;
+  const tEcho = 2*d/C;               // задержка эха
+
+  // сетка
+  ctx.strokeStyle = 'rgba(80,120,180,.14)'; ctx.lineWidth = 1;
+  for(let i=0;i<=6;i++){
+    const x = x0 + (x1-x0)*i/6;
+    ctx.beginPath(); ctx.moveTo(x,y1); ctx.lineTo(x,y0); ctx.stroke();
+    ctx.fillStyle = '#6f88a8'; ctx.font = '11px DejaVu Sans,Arial'; ctx.textAlign='center';
+    ctx.fillText((i*20)+' нс', x, y0+18);
+  }
+  ctx.strokeStyle = 'rgba(80,120,180,.28)';
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+
+  const tx = t => x0 + (x1-x0)*(t/tMax);
+  const amp = a => y0 - (y0-y1)*a;
+
+  // импульс зондирования
+  const pw = 1.6e-9;
+  ctx.strokeStyle = '#4da3ff'; ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(tx(tEmit-pw), y0);
+  ctx.lineTo(tx(tEmit-pw), amp(0.92));
+  ctx.lineTo(tx(tEmit), amp(0.92));
+  ctx.lineTo(tx(tEmit), y0);
+  ctx.stroke();
+
+  // эхо (амплитуда падает с расстоянием)
+  const echoA = Math.max(0.18, Math.min(0.85, 1.6/Math.max(1,d)));
+  ctx.strokeStyle = '#37d67a'; ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(tx(tEcho-pw*1.4), y0);
+  ctx.lineTo(tx(tEcho-pw*1.4), amp(echoA));
+  ctx.lineTo(tx(tEcho), amp(echoA));
+  ctx.lineTo(tx(tEcho), y0);
+  ctx.stroke();
+
+  // Δt
+  if(tEcho < tMax*0.98){
+    const y = amp(0.45);
+    ctx.strokeStyle = '#b07dff'; ctx.setLineDash([5,4]); ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(tx(tEmit), y); ctx.lineTo(tx(tEcho), y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#b07dff'; ctx.textAlign='center';
+    ctx.font = 'bold 12px DejaVu Sans,Arial';
+    ctx.fillText('Δt = ' + (tEcho*1e9).toFixed(1) + ' нс', (tx(tEmit)+tx(tEcho))/2, y-7);
+  }
+
+  // порог H_ср в виде вертикальной шкалы справа (для наглядности связи с дальностью)
+  ctx.fillStyle = '#8fa6c6'; ctx.textAlign='left'; ctx.font='11px DejaVu Sans,Arial';
+  ctx.fillText('окно развёртки: 0…120 нс', x0, y1-10);
+  ctx.textAlign='right';
+  ctx.fillStyle = '#6f88a8';
+  ctx.fillText('d = ' + d.toFixed(1).replace('.',',') + ' м', x1, y1-10);
+}
+
+/* ---------- отрисовка сцены «вниз» ---------- */
+function drawScene(){
+  const ctx = ctxS, W = WS, H = HS;
+  ctx.clearRect(0,0,W,H);
+  const padL = 54, padR = 18, padT = 26, padB = 34;
+  const x0 = padL, x1 = W - padR, y0 = H - padB, y1 = padT;
+  const dMax = 14;
+  const yOf = d => y0 - (y0-y1)*(d/dMax);
+
+  // «земля» внизу
+  ctx.fillStyle = 'rgba(55,214,122,.08)';
+  ctx.fillRect(x0, y0, x1-x0, 26);
+  ctx.strokeStyle = 'rgba(55,214,122,.5)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); ctx.stroke();
+  ctx.fillStyle = '#7fd7a3'; ctx.font = '11px DejaVu Sans,Arial'; ctx.textAlign='left';
+  ctx.fillText('земля', x0+6, y0+17);
+
+  // шкала дальности
+  ctx.strokeStyle = 'rgba(80,120,180,.18)';
+  for(let m=0; m<=dMax; m+=2){
+    const y = yOf(m);
+    ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.stroke();
+    ctx.fillStyle='#6f88a8'; ctx.textAlign='right'; ctx.font='11px DejaVu Sans,Arial';
+    ctx.fillText(m+' м', x0-8, y+4);
+  }
+
+  // порог
+  const yH = yOf(S.hsr);
+  ctx.strokeStyle = '#ff5a5a'; ctx.setLineDash([7,5]); ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.moveTo(x0, yH); ctx.lineTo(x1, yH); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ff8f8f'; ctx.textAlign='left'; ctx.font='bold 12px DejaVu Sans,Arial';
+  ctx.fillText('H_ср = ' + S.hsr.toFixed(1).replace('.',',') + ' м', x1-120, yH-7);
+
+  // БПЛА (наш)
+  const yDrone = yOf(S.d);
+  const cx = (x0+x1)/2;
+  ctx.fillStyle = '#4da3ff';
+  ctx.beginPath(); ctx.ellipse(cx, yDrone, 22, 8, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#bcd9ff'; ctx.font='bold 11px DejaVu Sans,Arial'; ctx.textAlign='center';
+  ctx.fillText('наш БПЛА', cx, yDrone-14);
+
+  // луч вниз + эхо
+  ctx.strokeStyle = 'rgba(77,163,255,.75)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx, yDrone+6); ctx.lineTo(cx, y0-2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(55,214,122,.8)'; ctx.setLineDash([5,4]); ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(cx, y0-2); ctx.lineTo(cx, yDrone+6); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // подпись высоты
+  ctx.fillStyle='#cfe0ff'; ctx.font='12px DejaVu Sans,Arial'; ctx.textAlign='left';
+  ctx.fillText('высота ' + S.d.toFixed(1).replace('.',',') + ' м', cx+30, yDrone+4);
+}
+
+/* ---------- обновление показаний ---------- */
+function update(){
+  const dm = measured(S.d);
+  const err = Math.abs(dm - S.d);
+  el('dm').textContent  = dm.toFixed(2).replace('.',',') + ' м';
+  el('err').textContent = '± ' + err.toFixed(2).replace('.',',') + ' м';
+  el('dt').textContent  = (2*S.d/C*1e9).toFixed(1).replace('.',',') + ' нс';
+  el('marg').textContent= (dm - S.hsr >= 0 ? '+' : '') + (dm - S.hsr).toFixed(2).replace('.',',') + ' м';
+
+  const st = el('state'), act = el('act');
+  let cls, txt, note, freq = 0;
+  if(dm <= 2){
+    cls='s-alarm'; txt='КРИТИЧНО'; freq=1600;
+    note='Высота < 2 м. Непрерывный звук + мигание LED: команда «немедленный набор высоты».';
+  } else if(dm <= S.hsr){
+    cls='s-alarm'; txt='СРАБАТЫВАНИЕ'; freq=1100;
+    note='Достигнут порог H_ср. Включены зуммер и LED, на CAN подан дискретный флаг «LOW ALT».';
+  } else if(dm <= S.hsr + 1){
+    cls='s-warn'; txt='ПРЕДУПРЕЖДЕНИЕ';
+    note='Высота приближается к порогу (в пределах 1 м). Учащённая телеметрия по CAN.';
+  } else {
+    cls='s-norm'; txt='НОРМА';
+    note='Оповещение выключено. Устройство выдаёт телеметрию высоты по CAN.';
+  }
+  st.className = 'state ' + cls;
+  st.textContent = txt;
+  act.textContent = note;
+
+  // звук срабатывания
+  if(freq > 0){
+    S.beep += 1/60;
+    const period = dm <= 2 ? 0.12 : 0.28;
+    if(S.beep >= period){ S.beep = 0; beep(freq); }
+    S.wasAlarm = true;
+  } else {
+    S.beep = 0; S.wasAlarm = false;
+  }
+}
+
+/* ---------- анимация ---------- */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  S.t += dt;
+  if(S.running){
+    S.d -= S.v*dt;
+    if(S.d < 0.5){ S.d = 14; }        // цикл: заново с 14 м
+    dS.value = S.d.toFixed(1);
+    syncLabels();
+  }
+  drawScene();
+  drawScope();
+  update();
+  requestAnimationFrame(loop);
+}
+
+syncLabels();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
