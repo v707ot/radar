@@ -73,7 +73,7 @@ shutil.copyfile(pv, root / "index.html")
 print("index.html создан")
 
 # --- навигация ---
-nav_old = '<a href="sim/detection3d.html">3D-демо</a> · <a href="sim/detection.html">2D-демо</a>'
+nav_old = '<a href="sim/detection3d.html">3D-игра</a> · <a href="sim/detection.html">2D-демо</a>'
 nav_new = (nav_old + ' ·\n<a href="docs/ПЕЧАТНАЯ_ПЛАТА_ТРАССИРОВКА.md">Плата</a> · '
            '<a href="docs/ССЫЛКИ_ДАТАШИТЫ_ЗАКУПКА.md">Даташиты и закупка</a>')
 for f in ("project.html", "sensors.html"):
@@ -89,7 +89,7 @@ for f in ("project.html", "sensors.html"):
 
 # верхняя панель preview/index
 pn_old = ('🎮 <b>Визуализации</b>: <a href="sim/principle.html" style="color:#7fb8ff"><b>Принцип дальности</b></a> · '
-          '<a href="sim/detection3d.html" style="color:#7fb8ff">3D (два БПЛА)</a> · '
+          '<a href="sim/detection3d.html" style="color:#7fb8ff">3D-игра (погоня)</a> · '
           '<a href="sim/detection.html" style="color:#7fb8ff">2D (гонка дронов)</a>')
 pn_new = (pn_old + '<br>🧩 <a href="docs/ПЕЧАТНАЯ_ПЛАТА_ТРАССИРОВКА.md" style="color:#7fb8ff"><b>Печатная плата</b> (трассировка)</a> · '
           '🔗 <a href="docs/ССЫЛКИ_ДАТАШИТЫ_ЗАКУПКА.md" style="color:#7fb8ff"><b>Даташиты и закупка в РФ</b></a>')
