@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3D-игра: догони цель радаром — БПЛА-СВ-МВ</title>
+<title>FPV-симулятор: догони цель радаром — БПЛА-СВ-МВ</title>
 <style>
   :root{
-    --bg:#070b14; --bg2:#0c1322; --line:#1b2740; --txt:#e6edf7; --dim:#8ea0bd;
+    --bg:#05080f; --line:#1b2740; --txt:#e6edf7; --dim:#8ea0bd;
     --blue:#4da3ff; --amber:#ffb020; --red:#ff4d4d; --green:#37d67a;
   }
   *{box-sizing:border-box}
@@ -15,72 +15,85 @@
     font-family:DejaVu Sans,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
   .app{display:flex;height:100vh;width:100vw}
   .stage{position:relative;flex:1 1 auto;min-width:0}
-  canvas{display:block;width:100%;height:100%;cursor:crosshair}
-  .panel{width:390px;flex:0 0 390px;
-    background:linear-gradient(180deg,var(--bg2),#080d19);
-    border-left:1px solid var(--line);overflow-y:auto;padding:16px 16px 40px}
-  h1{font-size:16.5px;margin:0 0 4px}
-  h2{font-size:12.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);
-     margin:19px 0 8px;font-weight:600}
-  .sub{font-size:12px;color:var(--dim);margin:0 0 6px;line-height:1.45}
+  canvas{display:block;width:100%;height:100%}
 
-  /* ---------- HUD ---------- */
-  .hud{position:absolute;left:16px;top:16px;pointer-events:none}
-  .dist{font-size:44px;font-weight:700;line-height:1;letter-spacing:-1px;
-        text-shadow:0 2px 22px rgba(0,0,0,.8)}
-  .dist small{font-size:15px;font-weight:500;color:var(--dim);margin-left:4px}
-  .badge{display:inline-block;margin-top:8px;padding:6px 14px;border-radius:999px;
-    font-size:13.5px;font-weight:700;letter-spacing:.4px;border:1px solid transparent}
-  .b-norm{background:rgba(77,163,255,.12);color:#9cc8ff;border-color:rgba(77,163,255,.45)}
-  .b-warn{background:rgba(255,176,32,.14);color:var(--amber);border-color:rgba(255,176,32,.5)}
-  .b-crit{background:rgba(255,77,77,.18);color:#ff8080;border-color:rgba(255,77,77,.6);
-          animation:pulse .5s infinite alternate}
-  @keyframes pulse{from{box-shadow:0 0 0 rgba(255,77,77,0)}to{box-shadow:0 0 26px rgba(255,77,77,.55)}}
-  .lockbar{margin-top:9px;width:210px;height:7px;border-radius:99px;background:rgba(255,255,255,.08);
-    overflow:hidden;border:1px solid rgba(255,255,255,.09)}
-  .lockbar i{display:block;height:100%;width:0%;border-radius:99px;
+  /* ---------- FPV HUD ---------- */
+  .hud{position:absolute;inset:0;pointer-events:none;font-family:DejaVu Sans Mono,monospace}
+  .hud .corner{position:absolute;width:26px;height:26px;border:2px solid rgba(180,220,255,.30)}
+  .c-tl{left:22px;top:22px;border-right:0;border-bottom:0}
+  .c-tr{right:22px;top:22px;border-left:0;border-bottom:0}
+  .c-bl{left:22px;bottom:22px;border-right:0;border-top:0}
+  .c-br{right:22px;bottom:22px;border-left:0;border-top:0}
+
+  .tele{position:absolute;left:44px;top:44px;font-size:12.5px;line-height:1.75;
+    color:#a8e6ff;text-shadow:0 0 10px rgba(80,200,255,.55)}
+  .tele b{color:#eaffff;font-weight:700}
+  .tele .k{color:#5f89b8;display:inline-block;width:74px}
+  .tele .warn{color:#ffb020}
+  .tele .crit{color:#ff5a5a}
+
+  .rbox{position:absolute;right:44px;top:44px;text-align:right;font-size:12.5px;
+    line-height:1.75;color:#a8e6ff;text-shadow:0 0 10px rgba(80,200,255,.55)}
+  .rbox b{color:#eaffff}
+
+  .bigdist{position:absolute;left:50%;top:34px;transform:translateX(-50%);
+    font-size:15px;letter-spacing:2.5px;color:#9ec5ff;opacity:.85;
+    text-shadow:0 0 12px rgba(80,160,255,.7)}
+  .bigdist b{font-size:26px;letter-spacing:0;color:#fff}
+
+  .badge{position:absolute;left:50%;top:96px;transform:translateX(-50%);
+    padding:6px 16px;border-radius:999px;font-size:12.5px;font-weight:700;
+    letter-spacing:1px;border:1px solid transparent;font-family:DejaVu Sans,Arial,sans-serif}
+  .b-norm{background:rgba(77,163,255,.13);color:#9cc8ff;border-color:rgba(77,163,255,.45)}
+  .b-warn{background:rgba(255,176,32,.15);color:var(--amber);border-color:rgba(255,176,32,.55)}
+  .b-crit{background:rgba(255,77,77,.2);color:#ff8080;border-color:rgba(255,77,77,.65);
+          animation:pulse .45s infinite alternate}
+  @keyframes pulse{from{box-shadow:0 0 0 rgba(255,77,77,0)}to{box-shadow:0 0 28px rgba(255,77,77,.6)}}
+
+  .lockwrap{position:absolute;left:50%;top:132px;transform:translateX(-50%);
+    width:220px;height:6px;border-radius:99px;background:rgba(255,255,255,.09);
+    overflow:hidden;border:1px solid rgba(255,255,255,.10)}
+  .lockwrap i{display:block;height:100%;width:0%;border-radius:99px;
     background:linear-gradient(90deg,#4da3ff,#ffb020,#ff4d4d);transition:width .08s linear}
-  .timer{position:absolute;right:18px;top:16px;font-size:20px;font-weight:700;
-    font-variant-numeric:tabular-nums;color:#cfe0ff;text-shadow:0 2px 18px rgba(0,0,0,.8)}
-  .timer span{font-size:11.5px;color:var(--dim);font-weight:500;display:block;text-align:right;
-    letter-spacing:.6px;text-transform:uppercase}
-  .readout{position:absolute;left:16px;bottom:16px;font-size:12px;color:var(--dim);
-    background:rgba(7,11,20,.62);border:1px solid var(--line);border-radius:10px;
-    padding:10px 12px;line-height:1.6;pointer-events:none;backdrop-filter:blur(4px)}
-  .readout b{color:var(--txt)}
 
   /* ---------- оверлей ---------- */
   .overlay{position:absolute;inset:0;display:none;place-items:center;
-    background:radial-gradient(60% 60% at 50% 45%,rgba(6,10,18,.72),rgba(4,7,12,.93));
-    backdrop-filter:blur(3px);z-index:5}
+    background:radial-gradient(62% 62% at 50% 45%,rgba(5,9,16,.74),rgba(3,5,10,.95));
+    backdrop-filter:blur(3px);z-index:5;pointer-events:auto}
   .overlay.show{display:grid}
-  .ovcard{width:min(560px,86%);background:linear-gradient(180deg,#101a2e,#0a1120);
-    border:1px solid #24365a;border-radius:16px;padding:26px 28px;text-align:center;
-    box-shadow:0 24px 70px rgba(0,0,0,.6)}
-  .ovbadge{display:inline-block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+  .ovcard{width:min(620px,90%);background:linear-gradient(180deg,#0e1728,#080e19);
+    border:1px solid #223453;border-radius:16px;padding:26px 30px;text-align:center;
+    box-shadow:0 26px 80px rgba(0,0,0,.7)}
+  .ovbadge{display:inline-block;font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
     color:#9cc8ff;border:1px solid #2b4a7a;background:rgba(77,163,255,.1);
-    padding:4px 11px;border-radius:99px;margin-bottom:12px}
+    padding:4px 12px;border-radius:99px;margin-bottom:12px}
   .ovcard h2{margin:0 0 10px;font-size:26px;letter-spacing:-.4px}
   .ovcard.win h2{color:#5ff09a}
   .ovcard.crash h2{color:#ff7b7b}
   .ovtext{font-size:13.5px;line-height:1.65;color:#c3d0e4;margin:0 0 16px}
   .ovtext b{color:#fff}
-  .keys{display:grid;grid-template-columns:repeat(2,1fr);gap:7px 14px;margin:0 0 18px;
+  .keys{display:grid;grid-template-columns:repeat(2,1fr);gap:7px 16px;margin:0 0 18px;
     text-align:left;font-size:12.5px;color:#c3d0e4}
   .keys div{display:flex;align-items:center;gap:8px}
   kbd{display:inline-block;min-width:22px;padding:2px 7px;border-radius:6px;
     background:#16223a;border:1px solid #2b3f63;border-bottom-width:2px;
     font-family:DejaVu Sans Mono,monospace;font-size:11.5px;color:#cfe4ff;text-align:center}
   .ovcard button{background:linear-gradient(180deg,#2d6cd6,#1f4fa8);color:#fff;border:1px solid #3f7fe0;
-    border-radius:11px;padding:12px 26px;font-size:14.5px;font-weight:700;cursor:pointer;
+    border-radius:11px;padding:12px 28px;font-size:14.5px;font-weight:700;cursor:pointer;
     font-family:inherit;letter-spacing:.3px}
   .ovcard button:hover{filter:brightness(1.12)}
 
   /* ---------- панель ---------- */
+  .panel{width:360px;flex:0 0 360px;background:linear-gradient(180deg,#0a1120,#060a13);
+    border-left:1px solid var(--line);overflow-y:auto;padding:16px 16px 40px}
+  h1{font-size:16px;margin:0 0 4px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);
+     margin:18px 0 8px;font-weight:600}
+  .sub{font-size:12px;color:var(--dim);margin:0 0 6px;line-height:1.45}
   .row{display:flex;align-items:center;gap:10px;margin:9px 0}
-  .row label{flex:0 0 118px;font-size:12px;color:var(--dim)}
+  .row label{flex:0 0 112px;font-size:12px;color:var(--dim)}
   input[type=range]{flex:1;accent-color:var(--blue)}
-  .val{flex:0 0 58px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+  .val{flex:0 0 60px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
   button{background:#16223a;color:var(--txt);border:1px solid var(--line);border-radius:9px;
     padding:9px 11px;font-size:12.5px;cursor:pointer;font-family:inherit;transition:.15s}
   button:hover{background:#1d2c4a;border-color:#2b3f63}
@@ -96,7 +109,7 @@
   .kv{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;
       border-bottom:1px dashed #16223a}
   .kv span:last-child{color:var(--txt);font-variant-numeric:tabular-nums}
-  @media (max-width:900px){.panel{display:none}}
+  @media (max-width:980px){.panel{display:none}}
 </style>
 </head>
 <body>
@@ -104,53 +117,63 @@
   <div class="stage">
     <canvas id="cv"></canvas>
 
-    <div class="hud">
-      <div class="dist" id="dist">—<small>м</small></div>
-      <div class="badge b-norm" id="badge">ПОИСК ЦЕЛИ</div>
-      <div class="lockbar"><i id="lockfill"></i></div>
-    </div>
-    <div class="timer"><span>время</span><b id="timer">0.0</b></div>
+    <div class="hud" id="hud">
+      <div class="corner c-tl"></div><div class="corner c-tr"></div>
+      <div class="corner c-bl"></div><div class="corner c-br"></div>
 
-    <div class="readout">
-      <div>Высота: <b id="alt1">—</b> м &nbsp;·&nbsp; скорость <b id="v1">—</b> м/с</div>
-      <div>Цель: <b id="vt">—</b> м/с &nbsp;·&nbsp; дальность <b id="d3d">—</b> м</div>
-      <div>Доворот на цель: <b id="boresight">—</b> &nbsp;·&nbsp; конус <b>±30°</b></div>
-      <div>Измерено датчиком: <b id="meas">—</b> м &nbsp;·&nbsp; t=2d/c: <b id="tof">—</b> нс</div>
+      <div class="tele">
+        <div><span class="k">ALT</span><b id="hAlt">0.0</b> м</div>
+        <div><span class="k">SPD</span><b id="hSpd">0.0</b> м/с</div>
+        <div><span class="k">BATT</span><b id="hBatt">100</b> %</div>
+        <div><span class="k">TIME</span><b id="hTime">0.0</b> с</div>
+      </div>
+
+      <div class="rbox">
+        <div>ЦЕЛЬ <b id="hTspd">0.0</b> м/с</div>
+        <div>ДОВОРОТ <b id="hAng">—</b></div>
+        <div>РЕЖИМ <b id="hMode">ANGLE</b></div>
+        <div>ВОРОТ <b id="hGate">0/0</b></div>
+      </div>
+
+      <div class="bigdist">ДИСТАНЦИЯ <b id="hDist">—</b> м</div>
+      <div class="badge b-norm" id="badge">ПОИСК ЦЕЛИ</div>
+      <div class="lockwrap"><i id="lockfill"></i></div>
     </div>
 
     <div class="overlay show" id="ov">
       <div class="ovcard" id="ovcard">
-        <div class="ovbadge" id="ovbadge">МИССИЯ</div>
+        <div class="ovbadge" id="ovbadge">FPV-СИМУЛЯТОР</div>
         <h2 id="ovtitle">ДОГОНИ ЦЕЛЬ</h2>
         <p class="ovtext" id="ovtext">
-          Вы управляете БПЛА с радаром 60 ГГц. Второй БПЛА уходит и прячется
-          у вас за хвостом. <b>Наведите нос на цель и подойдите ближе H_ср</b> —
-          как только цель окажется в конусе радара на дистанции срабатывания,
-          миссия выполнена.
+          Полноценная динамика квадрокоптера: тяга по оси корпуса, инерция,
+          угловые скорости. Второй БПЛА уходит из конуса радара.
+          <b>Наведите нос и подойдите ближе H_ср</b> — захват.
         </p>
         <div class="keys" id="ovkeys">
-          <div><kbd>W</kbd><kbd>S</kbd> тяга вперёд / назад</div>
-          <div><kbd>A</kbd><kbd>D</kbd> поворот влево / вправо</div>
-          <div><kbd>E</kbd><kbd>Q</kbd> набор / сброс высоты</div>
-          <div><kbd>Shift</kbd> форсаж</div>
-          <div><kbd>C</kbd> камера (погоня / сверху)</div>
-          <div><kbd>R</kbd> заново &nbsp;·&nbsp; <kbd>Esc</kbd> меню</div>
+          <div><kbd>W</kbd><kbd>S</kbd> газ (тяга)</div>
+          <div><kbd>A</kbd><kbd>D</kbd> крен / рыскание</div>
+          <div><kbd>↑</kbd><kbd>↓</kbd> тангаж (↑ нос вниз)</div>
+          <div><kbd>←</kbd><kbd>→</kbd> рыскание</div>
+          <div><kbd>M</kbd> режим ANGLE / ACRO</div>
+          <div><kbd>C</kbd> камера FPV / погоня</div>
+          <div><kbd>R</kbd> заново</div>
+          <div><kbd>Esc</kbd> меню</div>
         </div>
-        <button id="ovbtn">▶ Начать</button>
+        <button id="ovbtn">▶ Взлёт</button>
       </div>
     </div>
   </div>
 
   <aside class="panel">
-    <h1>3D-игра: догони цель радаром</h1>
-    <p class="sub">Вы пилотируете БПЛА с бортовым радаром 60 ГГц. Цель уклоняется
-      и старается держаться вне конуса обзора. Задача — поймать её в луч.</p>
-    <p class="sub" style="font-size:12px"><a href="principle.html" style="color:#4da3ff">Принцип измерения дальности</a> · <a href="../preview.html" style="color:#4da3ff">Обзор проекта</a></p>
+    <h1>FPV-симулятор: догони цель радаром</h1>
+    <p class="sub">Динамика квадрокоптера как в Liftoff / VelociDrone: тяга по оси
+      корпуса, инерция, угловые скорости, два режима управления.</p>
 
     <h2>Управление</h2>
     <div class="btns">
       <button id="play" class="on">⏸ Пауза</button>
-      <button id="cam">Камера: погоня</button>
+      <button id="cam">Камера: FPV</button>
+      <button id="fmode">Режим: ANGLE</button>
       <button id="snd">🔇 Звук</button>
       <button id="reset">↺ Заново</button>
     </div>
@@ -160,46 +183,47 @@
     <div class="row"><label>Скорость цели</label>
       <input type="range" id="tspd" min="7" max="17" step="0.5" value="13">
       <span class="val" id="tspdv">13 м/с</span></div>
-    <p class="sub">Чем меньше H_ср и быстрее цель, тем сложнее захват.
-      Конус обзора — <b>±30°</b> от оси носа.</p>
+    <div class="row"><label>Мощность</label>
+      <input type="range" id="pwr" min="0.6" max="1.6" step="0.05" value="1">
+      <span class="val" id="pwrv">100 %</span></div>
+    <div class="row"><label>Наклон FPV</label>
+      <input type="range" id="camt" min="0" max="45" step="1" value="20">
+      <span class="val" id="camtv">20°</span></div>
 
-    <h2>Как играть</h2>
+    <h2>Режимы полёта</h2>
     <div class="card">
-      Цель <b>прячется за хвостом</b>: пока она вне конуса, захвата нет.
-      Разворачивайтесь носом на неё (доворот → 0°) и сокращайте дистанцию
-      до <code>H_ср</code>. Полоса захвата показывает, насколько вы близки
-      к условию срабатывания.<br><br>
-      Столкновение с землёй — провал миссии.
+      <b>ANGLE</b> — автовыравнивание: стик задаёт угол, отпустил — дрон
+      возвращается в горизонт. Как «стабилизированный» режим в симуляторах.<br><br>
+      <b>ACRO</b> — стик задаёт <b>угловую скорость</b>, автовыравнивания нет.
+      Полный ручной контроль, инвертирование требует работы газом. Как в реальном FPV.
     </div>
 
-    <h2>Принцип измерения</h2>
+    <h2>Динамика</h2>
     <div class="card">
-      Дальность по времени пролёта: <code>d = c·t / 2</code>.<br>
-      На 10 м — <b>66,7 нс</b>, на 2 м — <b>13,3 нс</b>.<br>
-      Реакция радара A121 — <b>≤ 1 мс</b>, поэтому захват мгновенный:
-      как только цель в конусе и ближе порога — миссия завершена.
+      Тяга вдоль оси корпуса: <code>F = T·R·ẑ − mg − k·v²</code>.<br>
+      Углы — через кватернион, без «гимбал-лока».<br>
+      Инерция по осям: <code>I = (0.0035, 0.0035, 0.006)</code> кг·м².<br>
+      Тяговооружённость: <b id="pTwr">—</b>.
     </div>
 
-    <h2>Кольцо 360°</h2>
+    <h2>Захват цели</h2>
     <div class="card">
-      В изделии 4 сектора по <b>120°</b> → 480°, «мёртвых зон» нет.
-      В игре показан <b>передний канал</b> (±30°): именно его нужно навести
-      на цель. Вниз — радар высоты, вверх — контроль потолка.
+      Радар 60 ГГц видит цель в конусе <b>±30°</b> от оси носа.
+      Захват = цель в конусе <b>и</b> <code>d ≤ H_ср</code>. Реакция ≤ 1 мс.
     </div>
 
     <h2>Состояния</h2>
     <div class="legend">
-      <span><i style="background:var(--blue)"></i>Поиск: цель вне конуса</span>
-      <span><i style="background:var(--amber)"></i>Цель в конусе, далеко</span>
-      <span><i style="background:var(--red)"></i>Захват: в конусе и ≤ H_ср</span>
+      <span><i style="background:var(--blue)"></i>Цель вне конуса</span>
+      <span><i style="background:var(--amber)"></i>В конусе, далеко</span>
+      <span><i style="background:var(--red)"></i>Захват</span>
     </div>
 
-    <h2>Параметры системы</h2>
+    <h2>Параметры</h2>
     <div class="kv"><span>Порог срабатывания</span><span id="p1">10 м</span></div>
     <div class="kv"><span>Конус обзора</span><span>±30°</span></div>
     <div class="kv"><span>Реакция</span><span>≤ 1 мс (A121)</span></div>
-    <div class="kv"><span>Погрешность</span><span>≤ 0,1 м</span></div>
-    <div class="kv"><span>Полигонов в кадре</span><span id="p2">—</span></div>
+    <div class="kv"><span>Полигонов</span><span id="p2">—</span></div>
     <div class="kv"><span>Попыток</span><span id="p3">0</span></div>
   </aside>
 </div>
@@ -208,7 +232,7 @@
 (() => {
 "use strict";
 
-/* ================= ВЕКТОРНАЯ МАТЕМАТИКА ================= */
+/* ================= ВЕКТОРА ================= */
 const V=(x,y,z)=>({x,y,z});
 const sub=(a,b)=>V(a.x-b.x,a.y-b.y,a.z-b.z);
 const add=(a,b)=>V(a.x+b.x,a.y+b.y,a.z+b.z);
@@ -220,11 +244,43 @@ const norm=a=>{const l=len(a)||1; return V(a.x/l,a.y/l,a.z/l);};
 const lerp=(a,b,t)=>V(a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t, a.z+(b.z-a.z)*t);
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
+/* ================= КВАТЕРНИОН ================= */
+// q = (w, x, y, z)
+const Q={w:1,x:0,y:0,z:0};
+const qmul=(a,b)=>({
+  w:a.w*b.w-a.x*b.x-a.y*b.y-a.z*b.z,
+  x:a.w*b.x+a.x*b.w+a.y*b.z-a.z*b.y,
+  y:a.w*b.y-a.x*b.z+a.y*b.w+a.z*b.x,
+  z:a.w*b.z+a.x*b.y-a.y*b.x+a.z*b.w
+});
+const qnorm=q=>{const n=Math.hypot(q.w,q.x,q.y,q.z)||1;
+  return {w:q.w/n,x:q.x/n,y:q.y/n,z:q.z/n};};
+const qconj=q=>({w:q.w,x:-q.x,y:-q.y,z:-q.z});
+// поворот вектора кватернионом
+function qrot(q,v){
+  const p={w:0,x:v.x,y:v.y,z:v.z};
+  const r=qmul(qmul(q,p),qconj(q));
+  return V(r.x,r.y,r.z);
+}
+function qFromAxisAngle(ax,ang){
+  const h=ang/2, s=Math.sin(h);
+  return qnorm({w:Math.cos(h), x:ax.x*s, y:ax.y*s, z:ax.z*s});
+}
+// интегрирование угловой скорости (мировые оси) в кватернион
+function qIntegrate(q,omega,dt){
+  const w=V(omega.x,omega.y,omega.z);
+  const ang=len(w);
+  if(ang<1e-9) return q;
+  const dq=qFromAxisAngle(mul(w,1/ang), ang*dt);
+  return qnorm(qmul(dq,q));
+}
+
 /* ================= ХОЛСТ / КАМЕРА ================= */
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 let W=0,H=0,FOCAL=600;
 let cam=null, camPos=V(0,-40,20), camTgt=V(0,0,10), camUp=V(0,0,1);
-const fovY=55*Math.PI/180;
+let camFov=75*Math.PI/180;      // широкий FPV-объектив
+let camRoll=0;
 
 function resize(){
   const r=cv.parentElement.getBoundingClientRect();
@@ -232,7 +288,7 @@ function resize(){
   cv.width=Math.max(1,r.width*dpr); cv.height=Math.max(1,r.height*dpr);
   cv.style.width=r.width+'px'; cv.style.height=r.height+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  W=r.width; H=r.height; FOCAL=(H/2)/Math.tan(fovY/2);
+  W=r.width; H=r.height; FOCAL=(H/2)/Math.tan(camFov/2);
 }
 window.addEventListener('resize',resize);
 
@@ -243,18 +299,25 @@ function buildCam(){
   let r=cross(f,camUp);
   if(len(r)<1e-5) r=cross(f,V(0,1,0));
   r=norm(r);
-  cam={pos:camPos,f,r,u:cross(r,f)};
+  let u=cross(r,f);
+  if(camRoll){ // наклон горизонта (FPV-крен)
+    const c=Math.cos(camRoll), s=Math.sin(camRoll);
+    const r2=add(mul(r,c), mul(u,s));
+    const u2=add(mul(u,c), mul(r,-s));
+    r=norm(r2); u=norm(u2);
+  }
+  cam={pos:camPos,f,r,u};
 }
 function project(p){
   const d=sub(p,cam.pos);
   const z=dot(d,cam.f);
-  if(z<=0.35) return null;
+  if(z<=0.25) return null;
   const x=dot(d,cam.r), y=dot(d,cam.u);
   return {x:W/2+x*FOCAL/z, y:H/2-y*FOCAL/z, z};
 }
 
 /* ================= МЕСТНОСТЬ ================= */
-const EXT=95;
+const EXT=110;
 function terrainH(x,y){
   return 2.4*Math.sin(x*0.033)*Math.cos(y*0.030)
        + 1.5*Math.sin((x+y)*0.016)
@@ -263,16 +326,30 @@ function terrainH(x,y){
 }
 const LIGHT=norm(V(-0.45,0.55,-0.70));
 
-/* ================= СЦЕНА: ДЕРЕВЬЯ ================= */
+/* ================= СЦЕНА ================= */
 const TREES=[];
 (function(){
-  let seed=12345;
+  let seed=20251118;
   const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
-  for(let i=0;i<26;i++){
-    const x=(rnd()*2-1)*EXT*0.92, y=(rnd()*2-1)*EXT*0.92;
-    if(Math.hypot(x,y)<20) continue;
-    TREES.push({x,y,h:5+rnd()*4,r:1.5+rnd()*0.9});
+  for(let i=0;i<40;i++){
+    const x=(rnd()*2-1)*EXT*0.94, y=(rnd()*2-1)*EXT*0.94;
+    if(Math.hypot(x,y)<16) continue;
+    TREES.push({x,y,h:5+rnd()*5,r:1.4+rnd()*1.1,sh:0.75+rnd()*0.5});
   }
+})();
+
+/* ворота трассы: кольца, сквозь которые интересно летать */
+const GATES=(function(){
+  const out=[];
+  let seed=777;
+  const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2 + 0.35;
+    const r=32+rnd()*16;
+    const x=Math.cos(a)*r, y=Math.sin(a)*r;
+    out.push({x,y,z:terrainH(x,y)+11+rnd()*9, yaw:a+Math.PI/2, rad:3.2, pass:false});
+  }
+  return out;
 })();
 
 /* ================= МОДЕЛЬ БПЛА ================= */
@@ -282,68 +359,81 @@ function shadeColor(hex,k){
   r=Math.min(255,r*k|0); g=Math.min(255,g*k|0); b=Math.min(255,b*k|0);
   return `rgb(${r},${g},${b})`;
 }
-function dronePolys(pos, yaw, tiltX, tiltY, color, spin){
-  const cy=Math.cos(yaw), sy=Math.sin(yaw);
-  const rot=(p)=>{
-    const cX=Math.cos(tiltX), sX=Math.sin(tiltX);
-    const cY=Math.cos(tiltY), sY=Math.sin(tiltY);
-    const x=p.x, y=p.y, z=p.z;
-    const y1=y*cX-z*sX, z1=y*sX+z*cX;
-    const x2=x*cY+z1*sY, z2=-x*sY+z1*cY;
-    return V(pos.x+(x2*cy-y1*sy), pos.y+(x2*sy+y1*cy), pos.z+z2);
-  };
+// геометрия в осях корпуса: x — вправо, y — вперёд, z — вверх
+function dronePolys(pos, q, color, spin){
+  const rot=(p)=>add(pos, qrot(q, V(p.x,p.y,p.z)));
   const polys=[];
   const push=(pts,col)=>polys.push({pts:pts.map(rot), col, kind:'drone'});
 
-  const bw=0.30, bl=0.42, bt=0.06;
-  const top=[V(-bl,-bw,bt),V(bl,-bw,bt),V(bl,bw,bt),V(-bl,bw,bt)];
+  const bw=0.16, bl=0.26, bt=0.05;
+  const top=[V(-bw,-bl,bt),V(bw,-bl,bt),V(bw,bl,bt),V(-bw,bl,bt)];
   const bot=top.map(p=>V(p.x,p.y,-bt));
   push(top, color);
-  push(bot, shadeColor(color,0.55));
+  push(bot, shadeColor(color,0.5));
   for(let i=0;i<4;i++){
     const a=top[i], b=top[(i+1)%4], c=bot[(i+1)%4], d=bot[i];
-    push([a,b,c,d], shadeColor(color,0.72));
+    push([a,b,c,d], shadeColor(color,0.7));
   }
-  push([V(bl,-bw*0.5,bt),V(bl,bw*0.5,bt),V(bl+0.16,0,0)], shadeColor(color,1.25));
+  push([V(-bw*0.6,bl,bt),V(bw*0.6,bl,bt),V(0,bl+0.14,0)], shadeColor(color,1.3));
 
-  const arm=0.42, rr=0.20;
+  const arm=0.30, rr=0.155;
   for(const s of [[1,1],[1,-1],[-1,1],[-1,-1]]){
     const ax=s[0]*arm, ay=s[1]*arm;
     const disc=[];
     for(let k=0;k<8;k++){
       const a=k*Math.PI/4;
-      disc.push(V(ax+Math.cos(a)*rr, ay+Math.sin(a)*rr, bt+0.03));
+      disc.push(V(ax+Math.cos(a)*rr, ay+Math.sin(a)*rr, bt+0.02));
     }
-    push(disc, 'rgba(180,205,240,0.30)');
-    const bl2=[V(ax+Math.cos(spin)*rr, ay+Math.sin(spin)*rr, bt+0.04),
-               V(ax-Math.cos(spin)*rr, ay-Math.sin(spin)*rr, bt+0.04)];
-    polys.push({pts:bl2.map(rot), line:'rgba(220,235,255,0.55)', kind:'drone'});
-    polys.push({pts:[rot(V(0,0,0)),rot(V(ax,ay,bt*0.4))], line:shadeColor(color,0.8), kind:'drone'});
+    push(disc, 'rgba(175,205,245,0.26)');
+    const bl2=[V(ax+Math.cos(spin)*rr, ay+Math.sin(spin)*rr, bt+0.03),
+               V(ax-Math.cos(spin)*rr, ay-Math.sin(spin)*rr, bt+0.03)];
+    polys.push({pts:bl2.map(rot), line:'rgba(225,240,255,0.5)', kind:'drone'});
+    polys.push({pts:[rot(V(0,0,0)),rot(V(ax,ay,bt*0.3))], line:shadeColor(color,0.78), kind:'drone'});
   }
   return polys;
 }
 
-/* ================= ПАРАМЕТРЫ ИГРЫ ================= */
-const CONE=30*Math.PI/180;      // половина угла обзора переднего канала
-const THRUST=34, VUP=17, DRAG=1.55, YAWRATE=2.0;
-const VMAX=19, VMAXB=30, CRASH_CLEAR=1.0, CEILING=45;
+/* ================= ПАРАМЕТРЫ ================= */
+const CONE=30*Math.PI/180;
+const G=9.81;
+const MASS=0.65;                 // кг — 5" квадрокоптер
+const MAXTHRUST=20.4;            // Н (тяговооружённость ~3.2)
+const DRAGK=0.022;               // квадратичное сопротивление
+const RATE=9.5;                  // рад/с максимальная угловая скорость
+const ANGLE_MAX=0.96;            // рад (~55°) предел наклона в ANGLE
+const CRASH_CLEAR=0.9;
+const CEILING=90;               // потолок над рельефом, м
 
 const S={
-  mode:'menu',                  // menu | play | win | crash
-  t:0, timer:0, attempts:0,
-  thr:10, tspd:13, sound:false, camMode:'chase',
+  mode:'menu',
+  t:0, timer:0, attempts:0, batt:100,
+  thr:10, tspd:13, pwr:1, sound:false, camMode:'fpv', fmode:'angle',
+  camTilt:20*Math.PI/180,
   keys:{}, spin:0, polyCount:0,
-  pl:{p:V(0,0,20), v:V(0,0,0), yaw:0, roll:0, pitch:0},
+  pl:{p:V(0,0,0), v:V(0,0,0), q:{w:1,x:0,y:0,z:0}, omega:V(0,0,0), thrust:0,
+      ax:{pitch:0,roll:0,yaw:0,thr:0}},
   tg:{p:V(-40,25,24), v:V(0,0,0), yaw:0},
   d:0, ang:0, inCone:false, inRange:false, lock:0,
-  trailP:[], trailT:[], best:null, beepAcc:0
+  trailP:[], trailT:[], best:null, beepAcc:0, gatesPassed:0, gateHits:0
 };
 
 /* ================= ЗВУК ================= */
-let actx=null;
+let actx=null, motorGain=null, motorOsc=null;
 function initAudio(){
   if(!actx){ try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){actx=null;} }
   if(actx&&actx.state==='suspended') actx.resume();
+  if(actx&&!motorOsc){
+    motorOsc=actx.createOscillator(); motorOsc.type='sawtooth';
+    motorGain=actx.createGain(); motorGain.gain.value=0;
+    motorOsc.frequency.value=180; motorOsc.connect(motorGain); motorGain.connect(actx.destination);
+    motorOsc.start();
+  }
+}
+function motorSound(thr,dt){
+  if(!motorOsc||!actx) return;
+  const target=S.sound? (0.012+0.05*thr) : 0;
+  motorGain.gain.setTargetAtTime(target, actx.currentTime, 0.05);
+  motorOsc.frequency.setTargetAtTime(150+520*thr, actx.currentTime, 0.06);
 }
 function beep(f,d,v,type){
   if(!actx||!S.sound) return;
@@ -355,14 +445,20 @@ function beep(f,d,v,type){
 }
 document.addEventListener('pointerdown',initAudio);
 
-/* ================= СБРОС / РЕЖИМЫ ================= */
+/* ================= СБРОС ================= */
 function resetGame(){
-  S.t=0; S.timer=0;
-  S.pl.p=V(0,0,terrainH(0,0)+20); S.pl.v=V(0,0,0); S.pl.yaw=0; S.pl.roll=0; S.pl.pitch=0;
+  S.t=0; S.timer=0; S.batt=100;
+  const z0=terrainH(0,0)+14;
+  S.pl.p=V(0,0,z0); S.pl.v=V(0,0,0);
+  S.pl.q={w:1,x:0,y:0,z:0}; S.pl.omega=V(0,0,0); S.pl.thrust=0;
+  S.pl.ax={pitch:0,roll:0,yaw:0,thr:0};
   S.tg.p=V(-46,26,terrainH(-46,26)+24); S.tg.v=V(0,0,0); S.tg.yaw=Math.PI*0.75;
   S.trailP.length=0; S.trailT.length=0;
   S.d=0; S.ang=0; S.inCone=false; S.inRange=false; S.lock=0; S.beepAcc=0;
-  camPos=add(S.pl.p, V(-10,-10,4)); camTgt=add(S.pl.p, V(14,0,0));
+  S.gatesPassed=0; S.gateHits=0;
+  for(const g of GATES) g.pass=false;
+  camPos=add(S.pl.p,V(-8,-8,4)); camTgt=S.pl.p;
+  camRoll=0;
   setMode('menu');
 }
 
@@ -373,32 +469,31 @@ function setMode(m){
   ov.classList.add('show');
   card.className='ovcard'+(m==='win'?' win':m==='crash'?' crash':'');
   if(m==='menu'){
-    el('ovbadge').textContent='МИССИЯ';
+    el('ovbadge').textContent='FPV-СИМУЛЯТОР';
     el('ovtitle').textContent='ДОГОНИ ЦЕЛЬ';
-    el('ovtext').innerHTML='Вы управляете БПЛА с радаром 60 ГГц. Второй БПЛА уходит '+
-      'и прячется у вас за хвостом. <b>Наведите нос на цель и подойдите ближе H_ср</b> — '+
-      'как только цель окажется в конусе радара на дистанции срабатывания, миссия выполнена.';
+    el('ovtext').innerHTML='Полноценная динамика квадрокоптера: тяга по оси корпуса, '+
+      'инерция, угловые скорости. Второй БПЛА уходит из конуса радара. '+
+      '<b>Наведите нос и подойдите ближе H_ср</b> — захват.';
     el('ovkeys').style.display='';
-    el('ovbtn').textContent='▶ Начать';
+    el('ovbtn').textContent='▶ Взлёт';
   } else if(m==='win'){
-    const dd=S.d.toFixed(1), aa=(S.ang*180/Math.PI).toFixed(0);
     el('ovbadge').textContent='МИССИЯ ВЫПОЛНЕНА';
     el('ovtitle').textContent='ЦЕЛЬ ЗАХВАЧЕНА';
     el('ovtext').innerHTML='Захват за <b>'+S.timer.toFixed(1)+' с</b> · дистанция '+
-      '<b>'+dd+' м</b> · доворот <b>'+aa+'°</b> · порог H_ср = <b>'+S.thr+' м</b>.'+
+      '<b>'+S.d.toFixed(1)+' м</b> · доворот <b>'+(S.ang*180/Math.PI).toFixed(0)+'°</b> · '+
+      'порог H_ср = <b>'+S.thr+' м</b>'+
       (S.best!==null?'<br>Лучшее время: <b>'+S.best.toFixed(1)+' с</b>.':'');
     el('ovkeys').style.display='none';
     el('ovbtn').textContent='↺ Ещё раз';
   } else {
     el('ovbadge').textContent='МИССИЯ ПРОВАЛЕНА';
-    el('ovtitle').textContent='СТОЛКНОВЕНИЕ С ЗЕМЛЁЙ';
-    el('ovtext').innerHTML='Держите высоту больше <b>1 м</b> над рельефом. '+
-      'Попробуйте снова — цель никуда не денется.';
+    el('ovtitle').textContent='РАЗБИЛСЯ';
+    el('ovtext').innerHTML='Дрон коснулся земли на скорости. Держите высоту и '+
+      'гасите скорость перед снижением.';
     el('ovkeys').style.display='none';
     el('ovbtn').textContent='↺ Заново';
   }
 }
-
 function win(){
   if(S.mode!=='play') return;
   S.attempts++;
@@ -410,73 +505,143 @@ function win(){
 function crash(){
   if(S.mode!=='play') return;
   S.attempts++;
-  beep(180,0.35,0.1,'sawtooth');
+  beep(150,0.4,0.12,'sawtooth');
   setMode('crash');
 }
 
-/* ================= ФИЗИКА ИГРОКА ================= */
+/* ================= ФИЗИКА КВАДРОКОПТЕРА ================= */
+/* Оси корпуса: x — вправо, y — вперёд, z — вверх.
+   Тяга всегда вдоль +z корпуса (в мире — qrot(q, (0,0,1))). */
 function updatePlayer(dt){
   const k=S.keys;
-  const yawIn=(k.d?1:0)-(k.a?1:0);
-  S.pl.yaw+=yawIn*YAWRATE*dt;
+  const pl=S.pl;
 
-  const fwd=V(Math.cos(S.pl.yaw),Math.sin(S.pl.yaw),0);
-  const thrust=((k.w?1:0)-(k.s?1:0))*(k.shift?1.75:1)*THRUST;
-  const vert=((k.e?1:0)-(k.q?1:0))*VUP;
+  // ---- вход по осям (сглаженный: клавиатура = дискретный стик) ----
+  const sm=(key,tgt,rate)=>{
+    const cur=pl.ax[key];
+    const v=cur+(tgt-cur)*Math.min(1,dt*rate);
+    pl.ax[key]=v; return v;
+  };
+  // ↑ = стик вперёд = нос вниз (полёт вперёд), ↓ = стик назад = нос вверх
+  const pitchIn = sm('pitch', (k.down?1:0)-(k.up?1:0), 9);
+  const rollIn  = sm('roll',  (k.right?1:0)-(k.left?1:0), 9);
+  const yawIn   = sm('yaw',   (k.yawR?1:0)-(k.yawL?1:0), 7);
+  const thrIn   = sm('thr',   (k.w?1:0)-(k.s?1:0), 8);
 
-  let v=add(S.pl.v, mul(fwd,thrust*dt));
-  v.z+=vert*dt;
-  v=mul(v, Math.exp(-DRAG*dt));
-  const sp=len(v), vmax=k.shift?VMAXB:VMAX;
-  if(sp>vmax) v=mul(v,vmax/sp);
-  S.pl.v=v;
-  S.pl.p=add(S.pl.p, mul(v,dt));
-
-  S.pl.roll+=((-yawIn*0.38)-S.pl.roll)*Math.min(1,dt*6);
-  S.pl.pitch+=((-v.z*0.018)-S.pl.pitch)*Math.min(1,dt*5);
-
-  const r=Math.hypot(S.pl.p.x,S.pl.p.y), rmax=EXT*0.95;
-  if(r>rmax){
-    const n=V(S.pl.p.x/r,S.pl.p.y/r,0);
-    const out=dot(S.pl.v,n);
-    if(out>0) S.pl.v=sub(S.pl.v, mul(n,out*1.6));
+  // ---- газ ----
+  let T;
+  if(S.fmode==='angle'){
+    // ANGLE: стик газа = вертикальная скорость (удержание высоты, как в DJI/Liftoff)
+    const vzTgt = thrIn*5.0;
+    const az = clamp((vzTgt - pl.v.z)*3.2, -14, 14);
+    const tiltCos = Math.max(0.30, qrot(pl.q,V(0,0,1)).z);
+    T = clamp(MASS*(G+az)/tiltCos, 0, MAXTHRUST*S.pwr);
+    pl.thrust = T/MAXTHRUST;
+  } else {
+    // ACRO: стик газа = тяга напрямую, без автовысоты
+    const targetThr = thrIn>0?1:0;
+    pl.thrust += (targetThr - pl.thrust)*Math.min(1,dt*14);
+    T = pl.thrust*MAXTHRUST*S.pwr;
   }
 
-  const gz=terrainH(S.pl.p.x,S.pl.p.y);
+  // ---- угловые скорости (в осях корпуса) ----
+  let wx, wy, wz;   // x — тангаж, y — крен, z — рыскание
+  const q=pl.q;
+  const fwdB=qrot(q,V(0,1,0)), rightB=qrot(q,V(1,0,0)), upB=qrot(q,V(0,0,1));
+  // текущие углы: тангаж (нос вверх +) и крен (правое крыло вниз +)
+  const pitchNow=Math.asin(clamp(fwdB.z,-1,1));
+  const rollNow=Math.atan2(-dot(rightB,V(0,0,1)), dot(upB,V(0,0,1)));
+
+  if(S.fmode==='angle'){
+    const pitchTgt=pitchIn*ANGLE_MAX;
+    const rollTgt=rollIn*ANGLE_MAX;
+    wx=(pitchTgt-pitchNow)*7.0;
+    wy=(rollTgt-rollNow)*7.0;
+    // поворот вокруг +Z идёт против часовой (влево), поэтому знак обратный
+    wz=-yawIn*RATE*0.55;
+  } else {
+    wx=pitchIn*RATE;
+    wy=rollIn*RATE;
+    wz=-yawIn*RATE;
+  }
+  wx=clamp(wx,-RATE*1.25,RATE*1.25);
+  wy=clamp(wy,-RATE*1.25,RATE*1.25);
+  wz=clamp(wz,-RATE*1.25,RATE*1.25);
+
+  // контур угловой скорости: omega стремится к заданной (как rate-loop в FC)
+  const tgtOmega=V(wx,wy,wz);
+  pl.omega=lerp(pl.omega, tgtOmega, Math.min(1,dt*14));
+
+  // тело → мир, затем интегрирование ориентации
+  const omegaWorld=qrot(q, pl.omega);
+  pl.q=qIntegrate(pl.q, omegaWorld, dt);
+
+  // ---- силы ----
+  const upBody=qrot(pl.q, V(0,0,1));
+  const thrustVec=mul(upBody, T/MASS);
+  const gravity=V(0,0,-G);
+  const speed=len(pl.v);
+  const dragVec = speed>0.01 ? mul(norm(pl.v), -DRAGK*speed*speed/MASS) : V(0,0,0);
+
+  const acc=add(add(thrustVec,gravity),dragVec);
+  pl.v=add(pl.v, mul(acc,dt));
+  pl.p=add(pl.p, mul(pl.v,dt));
+
+  // ---- столкновения ----
+  const r=Math.hypot(pl.p.x,pl.p.y), rmax=EXT*0.95;
+  if(r>rmax){
+    const n=V(pl.p.x/r,pl.p.y/r,0);
+    const out=dot(pl.v,n);
+    if(out>0) pl.v=sub(pl.v,mul(n,out*1.7));
+    pl.p.x*=rmax/r; pl.p.y*=rmax/r;
+  }
+  const gz=terrainH(pl.p.x,pl.p.y);
   const ceiling=gz+CEILING;
-  if(S.pl.p.z>ceiling){ S.pl.p.z=ceiling; if(S.pl.v.z>0) S.pl.v.z=0; }
-  if(S.pl.p.z<gz+CRASH_CLEAR){ S.pl.p.z=gz+CRASH_CLEAR; S.pl.v=V(0,0,0); crash(); }
+  if(pl.p.z>ceiling){
+    pl.p.z=ceiling;
+    if(pl.v.z>0) pl.v.z=0;
+  }
+  if(pl.p.z<gz+CRASH_CLEAR){
+    pl.p.z=gz+CRASH_CLEAR;
+    if(speed>4.5){ pl.v=V(0,0,0); crash(); return; }
+    pl.v.z=Math.max(0,pl.v.z);
+  }
+  // столкновение с деревьями
+  for(const tr of TREES){
+    const dx=pl.p.x-tr.x, dy=pl.p.y-tr.y;
+    if(dx*dx+dy*dy < (tr.r+0.5)*(tr.r+0.5)){
+      const base=terrainH(tr.x,tr.y);
+      if(pl.p.z < base+tr.h){ pl.v=V(0,0,0); crash(); return; }
+    }
+  }
+
+  // ---- расход батареи ----
+  const thrN=pl.thrust;
+  S.batt=Math.max(0, S.batt - dt*(0.02+0.10*thrN));
+  motorSound(thrN,dt);
 }
 
 /* ================= ИИ ЦЕЛИ ================= */
 function updateTarget(dt){
   const T=S.tg.p;
   const away=norm(sub(T,S.pl.p));
-  const lat=V(-away.y, away.x, 0);
-
-  // уклонение в сторону тем сильнее, чем ближе игрок и чем точнее наведён нос
+  const lat=V(-away.y,away.x,0);
   const panic=clamp(1-S.d/(S.thr*2.4),0,1);
-  const jink=Math.sin(S.t*1.35)*0.85 + Math.sin(S.t*2.90+1.1)*0.45;
-  const flee=1.0 + 0.5*panic;
-
-  let des=add(mul(away,flee), mul(lat, jink*(0.7+0.9*panic)));
-  // держит рабочую высоту ~16 м над рельефом
+  const jink=Math.sin(S.t*1.35)*0.85+Math.sin(S.t*2.90+1.1)*0.45;
+  let des=add(mul(away,1+0.5*panic), mul(lat,jink*(0.7+0.9*panic)));
   const wantZ=terrainH(T.x,T.y)+16;
   des.z=clamp((wantZ-T.z)*0.30,-0.7,0.7);
   des=norm(des);
 
-  // у края арены цель уходит вдоль границы, а не сквозь неё
   const r=Math.hypot(T.x,T.y), rmax=EXT*0.80;
   if(r>rmax){
     const radial=V(T.x/r,T.y/r,0);
     const out=dot(des,radial);
-    if(out>0) des=norm(sub(des, mul(radial,out*1.8)));
+    if(out>0) des=norm(sub(des,mul(radial,out*1.8)));
   }
-
   const speed=S.tspd*(1+0.18*panic);
   S.tg.v=lerp(S.tg.v, mul(des,speed), 1-Math.exp(-2.4*dt));
   S.tg.p=add(S.tg.p, mul(S.tg.v,dt));
-
   const tz=terrainH(S.tg.p.x,S.tg.p.y);
   if(S.tg.p.z<tz+6){ S.tg.p.z=tz+6; if(S.tg.v.z<0) S.tg.v.z=0; }
   if(len(S.tg.v)>0.6) S.tg.yaw=Math.atan2(S.tg.v.y,S.tg.v.x);
@@ -486,7 +651,7 @@ function updateTarget(dt){
 function updateDetect(){
   const dvec=sub(S.tg.p,S.pl.p);
   S.d=len(dvec);
-  const fwd=V(Math.cos(S.pl.yaw),Math.sin(S.pl.yaw),0);
+  const fwd=qrot(S.pl.q,V(0,1,0));
   S.ang=Math.acos(clamp(dot(norm(dvec),fwd),-1,1));
   S.inCone=S.ang<=CONE;
   S.inRange=S.d<=S.thr;
@@ -504,9 +669,18 @@ function updateDetect(){
   }
 }
 
+/* ================= ВОРОТА ================= */
+function updateGates(){
+  for(const g of GATES){
+    if(g.pass) continue;
+    const d=Math.hypot(S.pl.p.x-g.x, S.pl.p.y-g.y, S.pl.p.z-g.z);
+    if(d<g.rad*0.9){ g.pass=true; S.gatesPassed++; beep(1100,0.07,0.05,'sine'); }
+  }
+}
+
 /* ================= ШАГ ================= */
 function step(dt){
-  S.t+=dt; S.spin+=dt*60;
+  S.t+=dt; S.spin+=dt*70;
 
   if(S.mode==='play'){
     S.timer+=dt;
@@ -514,14 +688,17 @@ function step(dt){
     if(S.mode==='play'){
       updateTarget(dt);
       updateDetect();
+      updateGates();
       S.trailP.push({x:S.pl.p.x,y:S.pl.p.y,z:S.pl.p.z});
-      if(S.trailP.length>240) S.trailP.shift();
+      if(S.trailP.length>260) S.trailP.shift();
       S.trailT.push({x:S.tg.p.x,y:S.tg.p.y,z:S.tg.p.z});
-      if(S.trailT.length>240) S.trailT.shift();
+      if(S.trailT.length>260) S.trailT.shift();
     }
   } else if(S.mode==='menu'){
-    S.pl.p.z=terrainH(S.pl.p.x,S.pl.p.y)+20+Math.sin(S.t*0.9)*0.5;
-    S.pl.yaw+=dt*0.12;
+    // мягкое парение в меню
+    S.pl.p.z=terrainH(S.pl.p.x,S.pl.p.y)+14+Math.sin(S.t*0.9)*0.6;
+    S.pl.q=qFromAxisAngle(V(0,0,1), S.t*0.15);
+    S.pl.omega=V(0,0,0);
     updateTarget(dt);
   }
 
@@ -531,81 +708,269 @@ function step(dt){
 
 /* ================= КАМЕРА ================= */
 function updateCam(dt){
-  const fwd=V(Math.cos(S.pl.yaw),Math.sin(S.pl.yaw),0);
+  const pl=S.pl;
   let tp,tt,tu=V(0,0,1);
-  if(S.camMode==='top'){
-    tp=add(S.pl.p,V(0,0,72)); tt=S.pl.p; tu=V(0,1,0);
-  } else {
-    tp=add(add(S.pl.p, mul(fwd,-9.5)), V(0,0,3.6));
-    tt=add(S.pl.p, mul(fwd,18));
+  let rollTgt=0;
+
+  if(S.camMode==='fpv'){
+    // камера в носовой части, наклонена вверх на camTilt
+    const q=pl.q;
+    const fwd=qrot(q,V(0,1,0));
+    const up=qrot(q,V(0,0,1));
+    const right=qrot(q,V(1,0,0));
+    // смещение камеры вперёд по корпусу
+    const camOff=qrot(q, V(0,0.18,0.06));
+    tp=add(pl.p, camOff);
+    // направление с учётом наклона камеры
+    const dirUp=add(mul(fwd,Math.cos(S.camTilt)), mul(up,Math.sin(S.camTilt)));
+    tt=add(tp, mul(dirUp,10));
+    tu=add(mul(up,Math.cos(S.camTilt)), mul(fwd,-Math.sin(S.camTilt)));
+    // крен горизонта: берём угол крена из правого вектора
+    rollTgt=-Math.atan2(dot(right,V(0,0,1)), dot(up,V(0,0,1)))*0.85;
+    // мгновенно (жёсткая FPV-камера)
+    camPos=tp; camTgt=tt; camUp=tu; camRoll=rollTgt;
+    return;
   }
-  const k=1-Math.pow(0.0008,dt);
+
+  // chase / top
+  const fwd=qrot(pl.q,V(0,1,0));
+  if(S.camMode==='top'){
+    tp=add(pl.p,V(0,0,68)); tt=pl.p; tu=V(0,1,0);
+  } else {
+    tp=add(add(pl.p,mul(fwd,-8.5)),V(0,0,3.2));
+    tt=add(pl.p,mul(fwd,14));
+  }
+  const k=1-Math.pow(0.0015,dt);
   camPos=lerp(camPos,tp,Math.min(1,k));
   camTgt=lerp(camTgt,tt,Math.min(1,k));
   camUp=tu;
+  camRoll+= (0-camRoll)*Math.min(1,dt*4);
 }
 
 /* ================= СБОР ПОЛИГОНОВ ================= */
 function collect(){
   const polys=[];
-
-  const stp=6.0, n=Math.floor((EXT*2)/stp);
+  const stp=7.0, n=Math.floor((EXT*2)/stp);
   const camFlat=V(cam.pos.x,cam.pos.y,0);
+
   for(let i=0;i<n;i++){
     for(let j=0;j<n;j++){
       const x0=-EXT+i*stp, y0=-EXT+j*stp;
       const x1=x0+stp, y1=y0+stp;
       const cx=(x0+x1)/2, cy=(y0+y1)/2;
-      if(Math.hypot(cx-camFlat.x, cy-camFlat.y) > 140) continue;
-      const h00=terrainH(x0,y0), h10=terrainH(x1,y0), h11=terrainH(x1,y1), h01=terrainH(x0,y1);
+      if(Math.hypot(cx-camFlat.x,cy-camFlat.y) > 155) continue;
+      const h00=terrainH(x0,y0),h10=terrainH(x1,y0),h11=terrainH(x1,y1),h01=terrainH(x0,y1);
       const pts=[V(x0,y0,h00),V(x1,y0,h10),V(x1,y1,h11),V(x0,y1,h01)];
-      const nrm=norm(cross(sub(pts[2],pts[0]), sub(pts[3],pts[1])));
-      const sh=Math.max(0, dot(nrm, mul(LIGHT,-1)));
+      const nrm=norm(cross(sub(pts[2],pts[0]),sub(pts[3],pts[1])));
+      const sh=Math.max(0,dot(nrm,mul(LIGHT,-1)));
       const havg=(h00+h10+h11+h01)/4;
-      const r=(86+22*sh)|0, g=((120+58*sh+havg*4)|0), b=(62+18*sh)|0;
-      polys.push({pts, col:`rgb(${r},${Math.min(200,g)},${b})`, kind:'terrain'});
+      // трава: насыщенный зелёный с вариацией по высоте и мелким шумом
+      const noise=((Math.sin(cx*1.7+cy*2.3)*0.5+0.5)*0.5
+                  +(Math.sin(cx*0.41-cy*0.67)*0.5+0.5)*0.5);
+      const dry=clamp((havg+3)/7,0,1);            // выше — суше и светлее
+      const r=(46+26*sh+30*dry+14*noise)|0;
+      const g=((88+70*sh+34*dry+20*noise)|0);
+      const b=(30+18*sh+14*dry+9*noise)|0;
+      polys.push({pts, col:`rgb(${Math.min(r,190)},${Math.min(g,215)},${Math.min(b,120)})`, kind:'terrain'});
     }
   }
 
   for(const tr of TREES){
     const base=terrainH(tr.x,tr.y);
-    const seg=6, apex=V(tr.x,tr.y,base+tr.h);
+    // ствол
+    const trunkTop=base+tr.h*0.42;
+    const trunkSeg=4;
+    for(let k=0;k<trunkSeg;k++){
+      const a0=k*2*Math.PI/trunkSeg, a1=(k+1)*2*Math.PI/trunkSeg;
+      const rw=tr.r*0.16;
+      const p0=V(tr.x+Math.cos(a0)*rw, tr.y+Math.sin(a0)*rw, base);
+      const p1=V(tr.x+Math.cos(a1)*rw, tr.y+Math.sin(a1)*rw, base);
+      const p2=V(tr.x+Math.cos(a1)*rw, tr.y+Math.sin(a1)*rw, trunkTop);
+      const p3=V(tr.x+Math.cos(a0)*rw, tr.y+Math.sin(a0)*rw, trunkTop);
+      const nn=norm(cross(sub(p1,p0),sub(p2,p0)));
+      const sh=Math.max(0.2, dot(nn, mul(LIGHT,-1)));
+      polys.push({pts:[p0,p1,p2,p3], col:`rgb(${(48+22*sh)|0},${(36+16*sh)|0},${(26+12*sh)|0})`, kind:'tree'});
+    }
+    // крона: три яруса из граней, каждый — веер
+    const tiers=3;
+    for(let ti=0;ti<tiers;ti++){
+      const t=ti/(tiers-1);
+      const zBase=base+tr.h*(0.35+t*0.30);
+      const zApex=base+tr.h*(0.62+t*0.38);
+      const rad=tr.r*(1.0-t*0.62);
+      const seg=7;
+      for(let k=0;k<seg;k++){
+        const a0=k*2*Math.PI/seg + ti*0.4, a1=(k+1)*2*Math.PI/seg + ti*0.4;
+        const p0=V(tr.x+Math.cos(a0)*rad, tr.y+Math.sin(a0)*rad, zBase);
+        const p1=V(tr.x+Math.cos(a1)*rad, tr.y+Math.sin(a1)*rad, zBase);
+        const apex=V(tr.x,tr.y,zApex);
+        const nn=norm(cross(sub(p1,p0),sub(apex,p0)));
+        const sh=Math.max(0.12, dot(nn, mul(LIGHT,-1)));
+        const gv=(52+58*sh)*tr.sh*(0.85+0.3*t);
+        polys.push({pts:[p0,p1,apex],
+          col:`rgb(${(18+16*sh)|0},${Math.min(150,gv)|0},${(24+16*sh)|0})`, kind:'tree'});
+      }
+    }
+    // блик сверху кроны
+    const topR=tr.r*0.38;
+    const topZ=base+tr.h*1.0;
+    const capSeg=7;
+    for(let k=0;k<capSeg;k++){
+      const a0=k*2*Math.PI/capSeg, a1=(k+1)*2*Math.PI/capSeg;
+      const p0=V(tr.x+Math.cos(a0)*topR, tr.y+Math.sin(a0)*topR, topZ-tr.h*0.10);
+      const p1=V(tr.x+Math.cos(a1)*topR, tr.y+Math.sin(a1)*topR, topZ-tr.h*0.10);
+      const apex=V(tr.x,tr.y,topZ);
+      polys.push({pts:[p0,p1,apex], col:`rgb(34,${(118*tr.sh)|0},36)`, kind:'tree'});
+    }
+  }
+
+  // ворота — кольца
+  for(const g of GATES){
+    const seg=18, R=g.rad;
+    const cy=Math.cos(g.yaw), sy=Math.sin(g.yaw);
     for(let k=0;k<seg;k++){
       const a0=k*2*Math.PI/seg, a1=(k+1)*2*Math.PI/seg;
-      const p0=V(tr.x+Math.cos(a0)*tr.r, tr.y+Math.sin(a0)*tr.r, base);
-      const p1=V(tr.x+Math.cos(a1)*tr.r, tr.y+Math.sin(a1)*tr.r, base);
-      const nn=norm(cross(sub(p1,p0), sub(apex,p0)));
-      const sh=Math.max(0.15, dot(nn, mul(LIGHT,-1)));
-      const g=(70+70*sh)|0;
-      polys.push({pts:[p0,p1,apex], col:`rgb(${(24+22*sh)|0},${g},${(30+22*sh)|0})`, kind:'tree'});
+      const p=(a)=>V(g.x+Math.cos(a)*R*cy, g.y+Math.cos(a)*R*sy, g.z+Math.sin(a)*R);
+      const p0=p(a0), p1=p(a1);
+      const col=g.pass?'rgba(90,240,150,0.95)':'rgba(255,150,60,0.9)';
+      polys.push({pts:[p0,p1], line:col, kind:'gate', lw:g.pass?2.6:3.4});
     }
-    polys.push({pts:[V(tr.x,tr.y,base-1.2),V(tr.x,tr.y,base+0.4)], line:'#3b2a1c', kind:'tree'});
   }
 
+  // тени
   for(const dr of [{p:S.pl.p},{p:S.tg.p}]){
-    const gz=terrainH(dr.p.x, dr.p.y);
-    const sh=[]; const rad=1.4;
+    const gz=terrainH(dr.p.x,dr.p.y);
+    const sh=[]; const rad=1.2;
     for(let k=0;k<10;k++){ const a=k*Math.PI/5;
-      sh.push(V(dr.p.x+Math.cos(a)*rad, dr.p.y+Math.sin(a)*rad, gz+0.06)); }
-    polys.push({pts:sh, col:'rgba(0,0,0,0.28)', kind:'shadow'});
+      sh.push(V(dr.p.x+Math.cos(a)*rad,dr.p.y+Math.sin(a)*rad,gz+0.05)); }
+    polys.push({pts:sh, col:'rgba(0,0,0,0.25)', kind:'shadow'});
   }
 
-  for(const p of dronePolys(S.pl.p, S.pl.yaw, S.pl.roll, S.pl.pitch, '#3d8bfd', S.spin)) polys.push(p);
-  for(const p of dronePolys(S.tg.p, S.tg.yaw, 0.07*Math.sin(S.t*2.1), 0.09*Math.sin(S.t*1.7), '#ff8a3d', S.spin*1.1+1)) polys.push(p);
+  for(const p of dronePolys(S.pl.p,S.pl.q,'#3d8bfd',S.spin)) polys.push(p);
+  const tgq=qmul(qFromAxisAngle(V(0,0,1),S.tg.yaw), qFromAxisAngle(V(1,0,0),0.12*Math.sin(S.t*2.1)));
+  for(const p of dronePolys(S.tg.p,tgq,'#ff8a3d',S.spin*1.1+1)) polys.push(p);
 
   return polys;
 }
 
 /* ================= ОТРИСОВКА ================= */
+/* ================= НЕБО (реалистичное, с облаками) ================= */
+const CLOUDS=(function(){
+  const out=[];
+  let seed=424242;
+  const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  for(let i=0;i<26;i++){
+    const az=rnd()*Math.PI*2, el=0.06+rnd()*0.55;
+    out.push({az, el, r:0.09+rnd()*0.20, a:0.10+rnd()*0.22, puffs:3+(rnd()*4|0)});
+  }
+  return out;
+})();
+
 function drawSky(){
   const g=ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,'#0a1a33'); g.addColorStop(0.45,'#16324f');
-  g.addColorStop(0.72,'#3f6a86'); g.addColorStop(1,'#7d94a0');
+  g.addColorStop(0.00,'#0f3f75');
+  g.addColorStop(0.20,'#2263a0');
+  g.addColorStop(0.44,'#4e93c4');
+  g.addColorStop(0.66,'#8bb8d4');
+  g.addColorStop(0.85,'#bcd3de');
+  g.addColorStop(1.00,'#d8e4e6');
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  // солнце по направлению LIGHT (у нас свет идёт "из" -LIGHT)
+  const sunW=norm(mul(LIGHT,-1));
+  const sp=projectWorldDir(sunW, 1e5);
+  if(sp){
+    const R=Math.max(W,H)*0.62;
+    const sg=ctx.createRadialGradient(sp.x,sp.y,0,sp.x,sp.y,R);
+    sg.addColorStop(0,'rgba(255,252,235,0.95)');
+    sg.addColorStop(0.03,'rgba(255,246,205,0.75)');
+    sg.addColorStop(0.16,'rgba(255,232,175,0.24)');
+    sg.addColorStop(0.5,'rgba(255,225,170,0.07)');
+    sg.addColorStop(1,'rgba(255,225,170,0)');
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    ctx.fillStyle=sg; ctx.fillRect(0,0,W,H); ctx.restore();
+  }
+
+  // облака: проекция сферы на небесную сферу
   ctx.save();
-  const sg=ctx.createRadialGradient(W*0.78,H*0.16,0,W*0.78,H*0.16,180);
-  sg.addColorStop(0,'rgba(255,236,190,0.55)'); sg.addColorStop(1,'rgba(255,236,190,0)');
-  ctx.fillStyle=sg; ctx.fillRect(0,0,W,H); ctx.restore();
+  for(const c of CLOUDS){
+    const dir=V(Math.cos(c.az)*Math.cos(c.el), Math.sin(c.az)*Math.cos(c.el), Math.sin(c.el));
+    const p=projectWorldDir(dir,1e5);
+    if(!p) continue;
+    const rad=c.r*FOCAL*0.055;
+    if(p.x<-rad*3||p.x>W+rad*3||p.y<-rad*3||p.y>H+rad*3) continue;
+    for(let k=0;k<c.puffs;k++){
+      const a=k*2.39996;
+      const px=p.x+Math.cos(a)*rad*(0.35+0.5*(k/c.puffs));
+      const py=p.y+Math.sin(a)*rad*0.22*(0.35+0.5*(k/c.puffs));
+      const pr=rad*(0.55+0.35*Math.sin(a*1.7));
+      const cg=ctx.createRadialGradient(px,py,0,px,py,pr);
+      cg.addColorStop(0,`rgba(255,255,255,${c.a})`);
+      cg.addColorStop(0.55,`rgba(238,246,252,${c.a*0.55})`);
+      cg.addColorStop(1,'rgba(220,235,245,0)');
+      ctx.fillStyle=cg;
+      ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// проекция направления (бесконечно далеко) в экран
+function projectWorldDir(dir,dist){
+  const p=add(cam.pos, mul(dir,dist));
+  return project(p);
+}
+
+// дальний туман: накладываем полупрозрачный слой по глубине
+function applyFog(depth){
+  // дымка начинается дальше и мягче — ближний план остаётся насыщенным
+  const d=clamp((depth-90)/190,0,1);
+  if(d<=0) return 0;
+  return d*d*0.55;
+}
+
+/* ================= ДАЛЁКИЕ ХОЛМЫ (задний план) ================= */
+const FAR_HILLS=(function(){
+  const out=[]; let seed=98765;
+  const rnd=()=>{ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; };
+  for(let layer=0;layer<2;layer++){
+    const pts=[];
+    const n=44;
+    for(let i=0;i<=n;i++){
+      const a=i/n*Math.PI*2;
+      const base=layer===0?0.052:0.030;
+      const amp=layer===0?0.030:0.020;
+      const h=base
+        + amp*Math.sin(a*3.1+layer*2.1)
+        + amp*0.55*Math.sin(a*7.3+layer*4.7)
+        + amp*0.30*Math.sin(a*13.7+layer*1.3);
+      pts.push({a, h:Math.max(0.008,h)});
+    }
+    out.push({pts, layer,
+      col: layer===0 ? 'rgb(104,140,146)' : 'rgb(74,112,118)'});
+  }
+  return out;
+})();
+
+function drawFarHills(){
+  // два слоя силуэтов холмов, привязанных к горизонту (не к камере по X/Y)
+  for(const L of FAR_HILLS){
+    ctx.beginPath();
+    let first=true;
+    for(const p of L.pts){
+      // направление в мире по азимуту; высота — малый угол над горизонтом
+      const dir=V(Math.cos(p.a),Math.sin(p.a),p.h);
+      const q=projectWorldDir(norm(dir),1e5);
+      if(!q){ first=true; continue; }
+      if(first){ ctx.moveTo(q.x,q.y); first=false; }
+      else ctx.lineTo(q.x,q.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle=L.col;
+    ctx.globalAlpha=L.layer===0?0.62:0.85;
+    ctx.fill();
+    ctx.globalAlpha=1;
+  }
 }
 
 function drawScene(){
@@ -614,7 +979,7 @@ function drawScene(){
   for(const p of polys){
     if(p.line){
       const a=project(p.pts[0]), b=project(p.pts[1]);
-      if(a&&b) drawn.push({depth:(a.z+b.z)/2, line:p.line, a, b});
+      if(a&&b) drawn.push({depth:(a.z+b.z)/2, line:p.line, a, b, lw:p.lw||1.4});
       continue;
     }
     const pr=p.pts.map(project);
@@ -626,9 +991,13 @@ function drawScene(){
 
   S.polyCount=drawn.length;
   for(const it of drawn){
+    const fog=applyFog(it.depth);
     if(it.line){
-      ctx.strokeStyle=it.line; ctx.lineWidth=1.4;
+      ctx.save();
+      if(fog>0){ ctx.globalAlpha=1-fog*0.85; }
+      ctx.strokeStyle=it.line; ctx.lineWidth=it.lw;
       ctx.beginPath(); ctx.moveTo(it.a.x,it.a.y); ctx.lineTo(it.b.x,it.b.y); ctx.stroke();
+      ctx.restore();
     } else {
       ctx.beginPath();
       ctx.moveTo(it.pr[0].x,it.pr[0].y);
@@ -636,38 +1005,38 @@ function drawScene(){
       ctx.closePath();
       ctx.fillStyle=it.col; ctx.fill();
       if(it.pr.length<=4){ ctx.strokeStyle=it.col; ctx.lineWidth=1; ctx.stroke(); }
+      if(fog>0.02){
+        ctx.save(); ctx.globalAlpha=fog; ctx.fillStyle='#c4d6de';
+        ctx.fill(); ctx.restore();
+      }
     }
   }
 }
 
-/* конус обзора: вершина на БПЛА, ось — нос, длина = H_ср */
+/* конус радара */
 function drawCone(){
-  const R=S.thr, P=S.pl.p, yaw=S.pl.yaw;
-  const fwd=V(Math.cos(yaw),Math.sin(yaw),0);
-  const right=V(-Math.sin(yaw),Math.cos(yaw),0);
-  const up=V(0,0,1);
+  const R=S.thr, P=S.pl.p;
+  const fwd=qrot(S.pl.q,V(0,1,0));
+  const right=qrot(S.pl.q,V(1,0,0));
+  const up=qrot(S.pl.q,V(0,0,1));
   const rimR=R*Math.tan(CONE);
-  const axisEnd=add(P, mul(fwd,R));
+  const axisEnd=add(P,mul(fwd,R));
 
-  const N=36, rim=[];
+  const N=30, rim=[];
   for(let i=0;i<=N;i++){
     const a=i*2*Math.PI/N;
     rim.push(add(axisEnd, add(mul(right,Math.cos(a)*rimR), mul(up,Math.sin(a)*rimR))));
   }
-
   const hot=S.inCone&&S.inRange, warm=S.inCone;
-  const col = hot ? 'rgba(255,70,70,0.95)' : warm ? 'rgba(255,176,32,0.85)' : 'rgba(90,170,255,0.55)';
+  const col=hot?'rgba(255,70,70,0.9)':warm?'rgba(255,176,32,0.75)':'rgba(90,170,255,0.42)';
 
-  ctx.save();
-  ctx.strokeStyle=col; ctx.lineWidth=hot?2.4:1.5;
-
-  ctx.globalAlpha=hot?0.85:0.5;
-  for(let i=0;i<N;i+=4){
+  ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=hot?2.4:1.4;
+  ctx.globalAlpha=hot?0.8:0.42;
+  for(let i=0;i<N;i+=3){
     const a=project(P), b=project(rim[i]);
     if(a&&b){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
   }
-
-  ctx.globalAlpha=1; ctx.lineWidth=hot?2.6:1.8;
+  ctx.globalAlpha=1; ctx.lineWidth=hot?2.6:1.6;
   ctx.beginPath();
   let started=false;
   for(const pt of rim){
@@ -676,29 +1045,18 @@ function drawCone(){
     if(!started){ ctx.moveTo(q.x,q.y); started=true; } else ctx.lineTo(q.x,q.y);
   }
   ctx.stroke();
-
-  ctx.setLineDash([5,6]); ctx.lineWidth=1.2; ctx.globalAlpha=0.6;
-  const a0=project(P), a1=project(axisEnd);
-  if(a0&&a1){ ctx.beginPath(); ctx.moveTo(a0.x,a0.y); ctx.lineTo(a1.x,a1.y); ctx.stroke(); }
-  ctx.setLineDash([]);
-
-  ctx.globalAlpha=1;
-  if(a1){
-    ctx.beginPath(); ctx.arc(a1.x,a1.y, hot?5:3.4, 0, Math.PI*2);
-    ctx.fillStyle=hot?'#ff5a5a':'rgba(200,225,255,0.9)'; ctx.fill();
-  }
   ctx.restore();
 }
 
 function drawOverlays(){
   const drawTrail=(arr,rgba)=>{
     if(arr.length<2) return;
-    ctx.save(); ctx.lineWidth=1.5;
+    ctx.save(); ctx.lineWidth=1.4;
     for(let i=1;i<arr.length;i++){
       const a=project(arr[i-1]), b=project(arr[i]);
       if(!a||!b) continue;
       const f=i/arr.length;
-      ctx.strokeStyle=`rgba(${rgba},${0.04+0.32*f})`;
+      ctx.strokeStyle=`rgba(${rgba},${0.03+0.28*f})`;
       ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
     }
     ctx.restore();
@@ -706,93 +1064,43 @@ function drawOverlays(){
   drawTrail(S.trailT,'255,150,90');
   drawTrail(S.trailP,'110,175,255');
 
-  drawCone();
+  if(S.camMode!=='fpv') drawCone();
 
-  if(S.d<70){
+  if(S.d<75){
     const a=project(S.pl.p), b=project(S.tg.p);
     if(a&&b){
       const hot=S.inCone;
-      ctx.save(); ctx.strokeStyle=hot?'rgba(255,90,90,0.85)':'rgba(140,200,255,0.45)';
-      ctx.lineWidth=hot?2.2:1.4; ctx.setLineDash([9,7]);
+      ctx.save(); ctx.strokeStyle=hot?'rgba(255,90,90,0.8)':'rgba(150,205,255,0.35)';
+      ctx.lineWidth=hot?2.0:1.2; ctx.setLineDash([8,7]);
       ctx.lineDashOffset=-((S.t*60)%16);
       ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
       ctx.restore();
     }
   }
-
   drawTargetArrow();
-
-  {
-    const gz=terrainH(S.pl.p.x,S.pl.p.y);
-    const a=project(S.pl.p), b=project(V(S.pl.p.x,S.pl.p.y,gz));
-    if(a&&b){ ctx.save(); ctx.strokeStyle='rgba(120,220,160,0.55)'; ctx.lineWidth=1.4;
-      ctx.setLineDash([5,6]); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.restore(); }
-  }
-
-  drawRadar();
 }
 
 function drawTargetArrow(){
   const d=sub(S.tg.p,cam.pos);
   const z=dot(d,cam.f), x=dot(d,cam.r), y=dot(d,cam.u);
-  let sx, sy;
+  let sx,sy;
   if(z>0.5){ sx=x/z*FOCAL; sy=-y/z*FOCAL; }
   else { const l=Math.hypot(x,y)||1; sx=x/l*FOCAL; sy=-y/l*FOCAL; }
   const px=W/2+sx, py=H/2+sy;
-  const margin=46;
-  if(px>margin && px<W-margin && py>margin && py<H-margin && z>0.5) return;
-
+  const margin=52;
+  if(px>margin&&px<W-margin&&py>margin&&py<H-margin&&z>0.5) return;
   const ang=Math.atan2(sy,sx);
   const rx=Math.min(W,H)*0.40;
   const ax=W/2+Math.cos(ang)*rx, ay=H/2+Math.sin(ang)*rx;
   ctx.save();
   ctx.translate(ax,ay); ctx.rotate(ang);
-  ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-9,9); ctx.lineTo(-9,-9); ctx.closePath();
-  ctx.fillStyle=S.inCone?'rgba(255,176,32,0.9)':'rgba(255,140,90,0.75)';
-  ctx.fill();
-  ctx.restore();
+  ctx.beginPath(); ctx.moveTo(15,0); ctx.lineTo(-9,9); ctx.lineTo(-9,-9); ctx.closePath();
+  ctx.fillStyle=S.inCone?'rgba(255,176,32,0.92)':'rgba(255,140,90,0.78)';
+  ctx.fill(); ctx.restore();
   ctx.save();
-  ctx.fillStyle='rgba(255,180,140,0.85)'; ctx.font='bold 11.5px DejaVu Sans,Arial';
+  ctx.fillStyle='rgba(255,185,145,0.9)'; ctx.font='bold 11.5px DejaVu Sans,Arial';
   ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('ЦЕЛЬ', ax-Math.cos(ang)*26, ay-Math.sin(ang)*26);
-  ctx.restore();
-}
-
-function drawRadar(){
-  const R=84, cx=W-R-26, cy=H-R-26;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2);
-  ctx.fillStyle='rgba(7,12,22,0.72)'; ctx.fill();
-  ctx.strokeStyle='rgba(90,150,220,0.5)'; ctx.lineWidth=1.2; ctx.stroke();
-
-  const scale=R/(S.thr*3.2);
-  const yaw=S.pl.yaw;
-  const hot=S.inCone&&S.inRange;
-  ctx.beginPath(); ctx.moveTo(cx,cy);
-  ctx.arc(cx,cy,R-6, yaw-CONE, yaw+CONE); ctx.closePath();
-  ctx.fillStyle = hot ? 'rgba(255,80,80,0.35)' : S.inCone ? 'rgba(255,176,32,0.28)' : 'rgba(80,160,255,0.12)';
-  ctx.fill();
-
-  ctx.setLineDash([3,3]);
-  ctx.beginPath(); ctx.arc(cx,cy,S.thr*scale,0,Math.PI*2);
-  ctx.strokeStyle='rgba(255,176,32,0.6)'; ctx.stroke();
-  ctx.setLineDash([]);
-
-  ctx.beginPath(); ctx.arc(cx,cy,4.5,0,Math.PI*2); ctx.fillStyle='#4da3ff'; ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(cx+Math.cos(yaw)*11, cy+Math.sin(yaw)*11);
-  ctx.lineTo(cx+Math.cos(yaw+2.5)*5, cy+Math.sin(yaw+2.5)*5);
-  ctx.lineTo(cx+Math.cos(yaw-2.5)*5, cy+Math.sin(yaw-2.5)*5);
-  ctx.closePath(); ctx.fillStyle='rgba(77,163,255,0.85)'; ctx.fill();
-
-  const dx=(S.tg.p.x-S.pl.p.x)*scale, dy=(S.tg.p.y-S.pl.p.y)*scale;
-  const l=Math.hypot(dx,dy), lim=R-10, k=l>lim?lim/l:1;
-  ctx.beginPath(); ctx.arc(cx+dx*k, cy+dy*k, 4.5, 0, Math.PI*2);
-  ctx.fillStyle = hot?'#ff4d4d':(S.inCone?'#ffb020':'#ff8a3d'); ctx.fill();
-
-  ctx.fillStyle='rgba(190,210,240,0.85)'; ctx.font='10.5px DejaVu Sans,Arial';
-  ctx.textAlign='center'; ctx.textBaseline='top';
-  ctx.fillText('вид сверху', cx, cy+R+6);
   ctx.restore();
 }
 
@@ -800,38 +1108,37 @@ function drawRadar(){
 const el=id=>document.getElementById(id);
 function updateHud(){
   const live=S.mode==='play'||S.mode==='win';
-  el('dist').innerHTML=(live&&S.d?S.d.toFixed(1):'—')+'<small>м</small>';
+  const pl=S.pl;
+  el('hAlt').textContent=live?(pl.p.z-terrainH(pl.p.x,pl.p.y)).toFixed(1):'0.0';
+  el('hSpd').textContent=live?len(pl.v).toFixed(1):'0.0';
+  el('hBatt').textContent=Math.round(S.batt);
+  el('hTime').textContent=(S.mode==='play'?S.timer:0).toFixed(1);
+  el('hTspd').textContent=len(S.tg.v).toFixed(1);
+  el('hAng').textContent=live?(S.ang*180/Math.PI).toFixed(0)+'°':'—';
+  el('hMode').textContent=S.fmode==='angle'?'ANGLE':'ACRO';
+  el('hGate').textContent=S.gatesPassed+'/'+GATES.length;
+  el('hDist').textContent=(live&&S.d)?S.d.toFixed(1):'—';
 
   const b=el('badge');
-  if(S.mode!=='play'){
-    b.className='badge b-norm';
-    b.textContent=S.mode==='win'?'ЗАХВАТ':'ПОИСК ЦЕЛИ';
-  } else if(S.inCone&&S.inRange){ b.className='badge b-crit'; b.textContent='ЗАХВАТ'; }
+  if(S.mode!=='play'){ b.className='badge b-norm';
+    b.textContent=S.mode==='win'?'ЗАХВАТ':'ПОИСК ЦЕЛИ'; }
+  else if(S.inCone&&S.inRange){ b.className='badge b-crit'; b.textContent='ЗАХВАТ'; }
   else if(S.inCone){ b.className='badge b-warn'; b.textContent='В КОНУСЕ — СБЛИЖАЙТЕСЬ'; }
   else { b.className='badge b-norm'; b.textContent='ЦЕЛЬ ВНЕ КОНУСА'; }
 
   el('lockfill').style.width=(S.lock*100).toFixed(0)+'%';
-  el('timer').textContent=(S.mode==='play'?S.timer.toFixed(1):'0.0');
-
-  el('alt1').textContent=(S.pl.p.z-terrainH(S.pl.p.x,S.pl.p.y)).toFixed(1);
-  el('v1').textContent=len(S.pl.v).toFixed(1);
-  el('vt').textContent=len(S.tg.v).toFixed(1);
-  el('d3d').textContent=S.d?S.d.toFixed(1):'—';
-  el('boresight').textContent=(S.ang*180/Math.PI).toFixed(0)+'°';
-  el('meas').textContent=(S.d*(1+(Math.random()-0.5)*0.004)).toFixed(2);
-  el('tof').textContent=(2*S.d/3e8*1e9).toFixed(1);
-  el('p2').textContent=S.polyCount;
   el('p1').textContent=S.thr+' м';
+  el('p2').textContent=S.polyCount;
   el('p3').textContent=S.attempts;
-
-  el('dist').style.color = S.inCone&&S.inRange ? '#ff4d4d' : S.inCone ? '#ffb020' : '#37d67a';
+  el('pTwr').textContent=(MAXTHRUST/(MASS*G)).toFixed(2)+' : 1';
 }
 
-/* ================= УПРАВЛЕНИЕ ================= */
+/* ================= ВВОД ================= */
 const KEYMAP={
-  KeyW:'w', KeyS:'s', KeyA:'a', KeyD:'d', KeyQ:'q', KeyE:'e',
-  ArrowUp:'e', ArrowDown:'q', ArrowLeft:'a', ArrowRight:'d',
-  ShiftLeft:'shift', ShiftRight:'shift'
+  KeyW:'w', KeyS:'s',
+  KeyA:'yawL', KeyD:'yawR',
+  ArrowLeft:'left', ArrowRight:'right',
+  ArrowUp:'up', ArrowDown:'down'
 };
 window.addEventListener('keydown',e=>{
   if(KEYMAP[e.code]){ S.keys[KEYMAP[e.code]]=true; e.preventDefault(); }
@@ -839,17 +1146,22 @@ window.addEventListener('keydown',e=>{
     if(S.mode!=='play'){ if(S.mode==='win'||S.mode==='crash') resetGame(); setMode('play'); } }
   if(e.code==='KeyR'){ resetGame(); setMode('play'); }
   if(e.code==='KeyC'){ toggleCam(); }
+  if(e.code==='KeyM'){ toggleFmode(); }
   if(e.code==='Escape'){ setMode('menu'); }
 });
 window.addEventListener('keyup',e=>{
   if(KEYMAP[e.code]){ S.keys[KEYMAP[e.code]]=false; e.preventDefault(); }
 });
 
-const CAMS=[['chase','погоня'],['top','сверху']];
+const CAMS=[['fpv','FPV'],['chase','погоня'],['top','сверху']];
 function toggleCam(){
   const i=CAMS.findIndex(c=>c[0]===S.camMode);
   S.camMode=CAMS[(i+1)%CAMS.length][0];
   el('cam').textContent='Камера: '+CAMS.find(c=>c[0]===S.camMode)[1];
+}
+function toggleFmode(){
+  S.fmode = S.fmode==='angle'?'acro':'angle';
+  el('fmode').textContent='Режим: '+(S.fmode==='angle'?'ANGLE':'ACRO');
 }
 
 el('ovbtn').onclick=()=>{
@@ -863,6 +1175,7 @@ el('play').onclick=e=>{
   else { setMode('play'); e.target.textContent='⏸ Пауза'; e.target.classList.add('on'); }
 };
 el('cam').onclick=()=>toggleCam();
+el('fmode').onclick=()=>toggleFmode();
 el('snd').onclick=e=>{ initAudio(); S.sound=!S.sound;
   e.target.textContent=S.sound?'🔊 Звук':'🔇 Звук';
   e.target.classList.toggle('on',S.sound); };
@@ -870,17 +1183,61 @@ el('reset').onclick=()=>{ resetGame(); setMode('play');
   el('play').textContent='⏸ Пауза'; el('play').classList.add('on'); };
 el('thr').oninput=e=>{ S.thr=+e.target.value; el('thrv').textContent=S.thr+' м'; };
 el('tspd').oninput=e=>{ S.tspd=+e.target.value; el('tspdv').textContent=S.tspd+' м/с'; };
+el('pwr').oninput=e=>{ S.pwr=+e.target.value; el('pwrv').textContent=Math.round(S.pwr*100)+' %'; };
+el('camt').oninput=e=>{ S.camTilt=+e.target.value*Math.PI/180;
+  el('camtv').textContent=e.target.value+'°'; };
 
 /* ================= ЦИКЛ ================= */
 let last=performance.now();
+/* ================= ПОСТОБРАБОТКА (кинематографичный вид) ================= */
+let grainSeed=12345;
+function postFx(){
+  // виньетка
+  const vg=ctx.createRadialGradient(W*0.5,H*0.5,Math.min(W,H)*0.30,
+                                     W*0.5,H*0.5,Math.max(W,H)*0.78);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(0.65,'rgba(0,0,0,0.10)');
+  vg.addColorStop(1,'rgba(0,0,0,0.42)');
+  ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
+
+  // лёгкий тёплый блик сверху (как засветка объектива)
+  const gl=ctx.createLinearGradient(0,0,W*0.5,H*0.55);
+  gl.addColorStop(0,'rgba(255,238,200,0.055)');
+  gl.addColorStop(1,'rgba(255,238,200,0)');
+  ctx.fillStyle=gl; ctx.fillRect(0,0,W,H);
+
+  // зерно (плёночный шум) — редкие точки, дёшево
+  ctx.save();
+  ctx.globalAlpha=0.035;
+  const n=Math.min(220, (W*H)/9000|0);
+  for(let i=0;i<n;i++){
+    grainSeed=(grainSeed*1103515245+12345)&0x7fffffff;
+    const gx=(grainSeed>>8)%W;
+    grainSeed=(grainSeed*1103515245+12345)&0x7fffffff;
+    const gy=(grainSeed>>8)%H;
+    ctx.fillStyle=(i&1)?'#fff':'#000';
+    ctx.fillRect(gx,gy,1,1);
+  }
+  ctx.restore();
+
+  // хроматическая аберрация по краям кадра (лёгкая)
+  const ca=ctx.createRadialGradient(W*0.5,H*0.5,Math.min(W,H)*0.42,
+                                    W*0.5,H*0.5,Math.max(W,H)*0.72);
+  ca.addColorStop(0,'rgba(0,0,0,0)');
+  ca.addColorStop(1,'rgba(90,150,255,0.055)');
+  ctx.fillStyle=ca; ctx.fillRect(0,0,W,H);
+}
+
 function loop(now){
-  const dt=Math.min(0.05,(now-last)/1000);
+  const dt=Math.min(0.033,(now-last)/1000);
   last=now;
   step(dt);
   buildCam();
   drawSky();
+  drawFarHills();
   drawScene();
   drawOverlays();
+  postFx();
   requestAnimationFrame(loop);
 }
 
